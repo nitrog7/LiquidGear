@@ -1,13 +1,12 @@
 /**
- * VERSION: 1.0
- * DATE: 10/18/2009
+ * VERSION: 1.13
+ * DATE: 12/8/2009
  * ACTIONSCRIPT VERSION: 3.0 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://www.TweenLite.com
  **/
 
 package lg.flash.motion.core {
 	import lg.flash.motion.TweenLite;
-	import lg.flash.motion.core.SimpleTimeline;
 /**
  * TweenCore is the base class for all TweenLite, TweenMax, TimelineLite, and TimelineMax classes and 
  * provides core functionality and properties. There is no reason to use this class directly.<br /><br />
@@ -18,7 +17,7 @@ package lg.flash.motion.core {
  */
 	public class TweenCore {
 		/** @private **/
-		public static const version:Number = 1.0;
+		public static const version:Number = 1.13;
 		
 		/** @private **/
 		protected static var _classInitted:Boolean;
@@ -173,7 +172,7 @@ package lg.flash.motion.core {
 				this.active = false;
 			}
 			if (!suppressEvents) {
-				if (this.vars.onComplete && this.cachedTime == this.cachedDuration && !this.cachedReversed) { //note: remember that tweens can have a duration of zero in which case their cachedTime and cachedDuration would always match.
+				if (this.vars.onComplete && this.cachedTotalTime == this.cachedTotalDuration && !this.cachedReversed) { //note: remember that tweens can have a duration of zero in which case their cachedTime and cachedDuration would always match.
 					this.vars.onComplete.apply(null, this.vars.onCompleteParams);
 				} else if (this.cachedReversed && this.cachedTotalTime == 0 && this.vars.onReverseComplete) {
 					this.vars.onReverseComplete.apply(null, this.vars.onReverseCompleteParams);
@@ -206,20 +205,18 @@ package lg.flash.motion.core {
 		 * @return Boolean value indicating whether or not important properties may have changed when the TweenCore was enabled/disabled. For example, when a motionBlur (plugin) is disabled, it swaps out a BitmapData for the target and may alter the alpha. We need to know this in order to determine whether or not a new tween that is overwriting this one should be re-initted() with the changed properties. 
 		 **/
 		public function setEnabled(enabled:Boolean, ignoreTimeline:Boolean=false):Boolean {
-			if (enabled == this.gc) {
-				this.gc = !enabled;
-				if (enabled) {
-					this.active = Boolean(!this.cachedPaused && this.cachedTotalTime > 0 && this.cachedTotalTime < this.cachedTotalDuration);
-					if (!ignoreTimeline) {
-						this.timeline.addChild(this);
-					}
-				} else {
-					this.active = false;
-					if (!ignoreTimeline) {
-						this.timeline.remove(this);
-					}
+			if (enabled) {
+				this.active = Boolean(!this.cachedPaused && this.cachedTotalTime > 0 && this.cachedTotalTime < this.cachedTotalDuration);
+				if (!ignoreTimeline && this.gc) {
+					this.timeline.addChild(this);
+				}
+			} else {
+				this.active = false;
+				if (!ignoreTimeline) {
+					this.timeline.remove(this, true);
 				}
 			}
+			this.gc = !enabled;
 			return false;
 		}
 		
@@ -398,6 +395,7 @@ package lg.flash.motion.core {
 				this.active = Boolean(!this.cachedPaused && this.cachedTotalTime > 0 && this.cachedTotalTime < this.cachedTotalDuration);
 			}
 			if (!b && this.gc) {
+				this.setTotalTime(this.cachedTotalTime, false);
 				this.setEnabled(true, false);
 			}
 		}

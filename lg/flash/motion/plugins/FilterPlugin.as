@@ -6,7 +6,9 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 	import lg.flash.motion.core.PropTween;
+	
 	import flash.filters.BitmapFilter;
 /**
  * Base class for all filter plugins (like blurFilter, colorMatrixFilter, glowFilter, etc.). Handles common routines. 

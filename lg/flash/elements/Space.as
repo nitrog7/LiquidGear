@@ -80,7 +80,7 @@ package lg.flash.elements {
 		/** @private **/
 		private var _renderer:BasicRenderEngine;
 		/** @private **/
-		private var _delayedStop:Timer	= new Timer(1500, 0);
+		private var _delayedStop:Timer	= new Timer(500, 0);
 		
 		/** 
 		*	Constructs a new Space object. Camera coordinates are all set to 0.
@@ -170,6 +170,9 @@ package lg.flash.elements {
 		
 		/** Start rendering the 3D scene. **/
 		public function play():void {
+			//trace('play::isPlaying', isPlaying);
+			_delayedStop.stop();
+			
 			if(!isPlaying) {
 				bind('element_enter', onEnter);
 			}
@@ -177,14 +180,13 @@ package lg.flash.elements {
 		
 		/** Stop rendering the 3D scene. **/
 		public function stop():void {
-			//_delayedStop.start();
-			if(isPlaying) {
-				unbind('element_enter', onEnter);
-			}
+			_delayedStop.reset();
+			_delayedStop.start();
 		}
 		private function onDelayedStop(e:Event):void {
+			_delayedStop.stop();
+			
 			if(isPlaying) {
-				_delayedStop.stop();
 				unbind('element_enter', onEnter);
 			}
 		}

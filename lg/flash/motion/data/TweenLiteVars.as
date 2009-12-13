@@ -1,6 +1,6 @@
 /**
- * VERSION: 4.0
- * DATE: 8/3/2009
+ * VERSION: 4.01
+ * DATE: 12/2/2009
  * AS3
  * UPDATES AND DOCUMENTATION AT: http://www.TweenLite.com
  **/
@@ -221,11 +221,14 @@ package lg.flash.motion.data {
 			setProp("useFrames", value);
 		}
 		
-		/** NONE = 0, ALL = 1, AUTO = 2, CONCURRENT = 3 (2 and 3 are only available with the optional OverwriteManager add-on class which must be initted once for TweenLite, like OverwriteManager.init(). TweenMax automatically inits OverwriteManager. **/
-		public function get overwrite():Boolean {
-			return Boolean(_values.overwrite);
+		/** NONE = 0, ALL_IMMEDIATE = 1, AUTO = 2, CONCURRENT = 3, ALL_ONSTART = 4, PREEXISTING = 5 (2 through 5 are only available with the optional OverwriteManager add-on class which must be initted once for TweenLite, like OverwriteManager.init(). TweenMax, TimelineLite, and TimelineMax automatically init OverwriteManager. **/
+		public function get overwrite():int {
+			if ("overwrite" in _values) {
+				return int(_values.overwrite);
+			}
+			return -1;
 		}
-		public function set overwrite(value:Boolean):void {
+		public function set overwrite(value:int):void {
 			setProp("overwrite", value);
 		}
 		

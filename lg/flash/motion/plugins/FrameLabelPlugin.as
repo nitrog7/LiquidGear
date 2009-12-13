@@ -5,9 +5,8 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	import lg.flash.motion.*;
-	
-	import flash.display.*;
+	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.FramePlugin;
 /**
  * Tweens a MovieClip to a particular frame label. <br /><br />
  * 

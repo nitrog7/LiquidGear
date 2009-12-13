@@ -5,8 +5,11 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	import flash.display.MovieClip;
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
+	
+	import flash.display.MovieClip;
+	
 /**
  * Tweens a MovieClip to a particular frame number. <br /><br />
  * 

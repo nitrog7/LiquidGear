@@ -1,6 +1,6 @@
-/**
- * VERSION: 2.1
- * DATE: 10/17/2009
+﻿/**
+ * VERSION: 2.11
+ * DATE: 11/14/2009
  * ACTIONSCRIPT VERSION: 3.0 
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
@@ -60,7 +60,7 @@ package lg.flash.motion.plugins {
 		
 		/** @private **/
 		override public function set changeFactor(n:Number):void {
-			if (n == 1 && _tween.cachedDuration == _tween.cachedTime) { //a changeFactor of 1 doesn't necessarily mean the tween is done - if the ease is Elastic.easeOut or Back.easeOut for example, they could hit 1 mid-tween.
+			if (n == 1 && (_tween.cachedDuration == _tween.cachedTime || _tween.cachedTime == 0)) { //a changeFactor of 1 doesn't necessarily mean the tween is done - if the ease is Elastic.easeOut or Back.easeOut for example, they could hit 1 mid-tween. The reason we check to see if cachedTime is 0 is for from() tweens
 				_target.visible = _visible;
 			} else {
 				_target.visible = _initVal; //in case a completed tween is re-rendered at an earlier time.

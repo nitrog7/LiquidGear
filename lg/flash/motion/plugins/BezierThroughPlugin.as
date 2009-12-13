@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * Identical to bezier except that instead of defining bezier control point values, you
  * define points through which the bezier values should move. This can be more intuitive

@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * Performs SLERP interpolation between 2 Quaternions. Each Quaternion should have x, y, z, and w properties.
  * Simply pass in an Object containing properties that correspond to your object's quaternion properties. 

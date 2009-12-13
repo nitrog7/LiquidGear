@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.FilterPlugin;
 	import flash.filters.ColorMatrixFilter;
 /**
  * ColorMatrixFilter tweening offers an easy way to tween a DisplayObject's saturation, hue, contrast,

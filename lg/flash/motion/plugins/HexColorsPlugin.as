@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * Although hex colors are technically numbers, if you try to tween them conventionally, 
  * you'll notice that they don't tween smoothly. To tween them properly, the red, green, and 

@@ -1,6 +1,6 @@
 /**
- * VERSION: 1.01
- * DATE: 11/7/2009
+ * VERSION: 1.11
+ * DATE: 11/19/2009
  * AS3 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://www.TweenLite.com
  **/
@@ -28,7 +28,7 @@ package lg.flash.motion.core {
 		
 		/** @private **/
 		public function addChild(tween:TweenCore):void {
-			if (tween.timeline) {
+			if (!tween.gc && tween.timeline) {
 				tween.timeline.remove(tween, true); //removes from existing timeline so that it can be properly added to this one.
 			}
 			tween.timeline = this;
@@ -37,7 +37,7 @@ package lg.flash.motion.core {
 			}
 			if (_firstChild) {
 				_firstChild.prevNode = tween;	
-			}
+			} 
 			tween.nextNode = _firstChild;
 			_firstChild = tween;
 			tween.prevNode = null;
@@ -60,15 +60,16 @@ package lg.flash.motion.core {
 			}
 			//don't null nextNode and prevNode, otherwise the chain could break in rendering loops.
 		}
-		
+
 		/** @private **/
 		override public function renderTime(time:Number, suppressEvents:Boolean=false, force:Boolean=false):void {
 			var tween:TweenCore = _firstChild, dur:Number, next:TweenCore;
 			this.cachedTotalTime = time;
 			this.cachedTime = time;
+			
 			while (tween) {
 				next = tween.nextNode; //record it here because the value could change after rendering...
-				if (tween.active || (time >= tween.cachedStartTime && !tween.cachedPaused)) {
+				if (tween.active || (time >= tween.cachedStartTime && !tween.cachedPaused && !tween.gc)) {
 					if (!tween.cachedReversed) {
 						tween.renderTime((time - tween.cachedStartTime) * tween.cachedTimeScale, suppressEvents, false);
 					} else {
@@ -78,6 +79,7 @@ package lg.flash.motion.core {
 				}
 				tween = next;
 			}
+			
 		}
 		
 //---- GETTERS / SETTERS ------------------------------------------------------------------------------

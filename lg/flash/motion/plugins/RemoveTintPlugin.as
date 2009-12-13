@@ -5,7 +5,7 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	lg.flash.motion.plugins.TintPlugin;
+	import lg.flash.motion.plugins.TintPlugin;
 /**
  * Removes the tint of a DisplayObject over time. <br /><br />
  * 

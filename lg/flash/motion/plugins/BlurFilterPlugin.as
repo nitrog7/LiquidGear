@@ -5,8 +5,9 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	import flash.filters.BlurFilter;
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
+	import flash.filters.BlurFilter;
 /**
  * Tweens a BlurFilter. The following properties are available (you only need to define the ones you want to tween):
  * <code>

@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * To tween any rotation property of the target object in the shortest direction, use "shortRotation" 
  * For example, if <code>myObject.rotation</code> is currently 170 degrees and you want to tween it to -170 degrees, 

@@ -6,6 +6,8 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
+	
 /**
  * Tweening "autoAlpha" is exactly the same as tweening an object's "alpha" except that it ensures 
  * that the object's "visible" property is true until autoAlpha reaches zero at which point it will 
@@ -62,6 +64,5 @@ package lg.flash.motion.plugins {
 				_target.visible = Boolean(_target.alpha != 0);
 			}
 		}
-		
 	}
 }

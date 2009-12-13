@@ -5,8 +5,10 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	import flash.filters.BevelFilter;
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.FilterPlugin;
+	
+	import flash.filters.BevelFilter;
 /**
  * Tweens a BevelFilter. The following properties are available (you only need to define the ones you want to tween): <br />
  * <code>

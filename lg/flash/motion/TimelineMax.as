@@ -1,15 +1,17 @@
 /**
- * VERSION: 1.04
- * DATE: 11/7/2009
+ * VERSION: 1.12
+ * DATE: 11/21/2009
  * AS3 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://blog.greensock.com/timelinemax/
  **/
 package lg.flash.motion {
-	import lg.flash.motion.core.*;
-	import lg.flash.motion.events.TweenEvent;
+	import lg.flash.motion.core.TweenCore;
+	import lg.flash.events.TweenEvent;
 	
-	import flash.events.*;
-	import flash.utils.*;
+	import flash.events.IEventDispatcher;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	//import flash.utils.*;
 /**
  * 	TimelineMax extends TimelineLite, offering exactly the same functionality plus useful 
  *  (but non-essential) features like AS3 event dispatching, repeat, repeatDelay, yoyo, 
@@ -148,7 +150,7 @@ package lg.flash.motion {
  **/
 	public class TimelineMax extends TimelineLite implements IEventDispatcher {
 		/** @private **/
-		public static const version:Number = 1.04;
+		public static const version:Number = 1.12;
 		
 		/** @private **/
 		protected var _repeat:int;
@@ -382,7 +384,7 @@ package lg.flash.motion {
 			} else if (!this.active && !this.cachedPaused) {
 				this.active = true; //so that if the user renders a tween (as opposed to the timeline rendering it), the timeline is forced to re-render and align it with the proper time/frame on the next rendering cycle. Maybe the tween already finished but the user manually re-renders it as halfway done.
 			}
-			var totalDur:Number = (this.cacheIsDirty) ? this.totalDuration : this.cachedTotalDuration, prevTime:Number = this.cachedTime, tween:TweenCore, isComplete:Boolean, rendered:Boolean, repeated:Boolean, next:TweenCore, dur:Number;
+			var totalDur:Number = (this.cacheIsDirty) ? this.totalDuration : this.cachedTotalDuration, prevTime:Number = this.cachedTime, prevStart:Number = this.cachedStartTime, tween:TweenCore, isComplete:Boolean, rendered:Boolean, repeated:Boolean, next:TweenCore, dur:Number;
 			if (time >= totalDur) {
 				if (_rawPrevTime <= totalDur && _rawPrevTime != time) {
 					if (!this.cachedReversed && this.yoyo && _repeat % 2 != 0) {
@@ -506,7 +508,7 @@ package lg.flash.motion {
 				tween = _firstChild;
 				while (tween) {
 					next = tween.nextNode; //record it here because the value could change after rendering...
-					if (tween.active || (!tween.cachedPaused && tween.cachedStartTime <= this.cachedTime)) {
+					if (tween.active || (!tween.cachedPaused && tween.cachedStartTime <= this.cachedTime && !tween.gc)) {
 						
 						if (!tween.cachedReversed) {
 							tween.renderTime((this.cachedTime - tween.cachedStartTime) * tween.cachedTimeScale, suppressEvents, false);
@@ -523,7 +525,7 @@ package lg.flash.motion {
 				tween = _lastChild;
 				while (tween) {
 					next = tween.prevNode; //record it here because the value could change after rendering...
-					if (tween.active || (!tween.cachedPaused && tween.cachedStartTime <= prevTime)) {
+					if (tween.active || (!tween.cachedPaused && tween.cachedStartTime <= prevTime && !tween.gc)) {
 						
 						if (!tween.cachedReversed) {
 							tween.renderTime((this.cachedTime - tween.cachedStartTime) * tween.cachedTimeScale, suppressEvents, false);
@@ -543,7 +545,7 @@ package lg.flash.motion {
 			if (_hasUpdateListener && !suppressEvents) {
 				_dispatcher.dispatchEvent(new TweenEvent(TweenEvent.UPDATE));
 			}
-			if (isComplete) {
+			if (isComplete && prevStart == this.cachedStartTime) { //if one of the tweens that was rendered altered this timeline's startTime (like if an onComplete reversed the timeline), we shouldn't run complete() because it probably isn't complete. If it is, don't worry, because whatever call altered the startTime would have called complete() if it was necessary at the new time.
 				complete(true, suppressEvents);
 			} else if (repeated && !suppressEvents) {
 				if (this.vars.onRepeat) {

@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * Tweens numbers in an Vector.<Number>. Remember, Vectors require that you publish to <strong>Flash Player 10</strong> or later.<br /><br />
  * 

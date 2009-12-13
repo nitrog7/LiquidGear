@@ -5,7 +5,6 @@
  * UPDATES AND DOCUMENTATION AT: http://blog.greensock.com/overwritemanager/
  **/
 package lg.flash.motion {
-	import lg.flash.motion.TweenLite;
 	import lg.flash.motion.core.TweenCore;
 	import lg.flash.motion.core.SimpleTimeline;
 	

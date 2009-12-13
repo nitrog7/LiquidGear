@@ -5,10 +5,9 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	import flash.media.SoundTransform;
 	import lg.flash.motion.TweenLite;
 	import lg.flash.motion.plugins.TweenPlugin;
-	import lg.flash.motion.plugins.SoundTransformPlugin;
+	import flash.media.SoundTransform;
 /**
  * Tweens properties of an object's soundTransform property (like the volume, pan, leftToRight, etc. of a MovieClip/SoundChannel/NetStream). <br /><br />
  * 

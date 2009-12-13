@@ -6,6 +6,8 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
+	
 /**
  * Bezier tweening allows you to tween in a non-linear way. For example, you may want to tween
  * a MovieClip's position from the origin (0,0) 500 pixels to the right (500,0) but curve downwards

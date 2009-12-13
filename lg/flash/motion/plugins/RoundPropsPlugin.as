@@ -5,7 +5,7 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * If you'd like the inbetween values in a tween to always get rounded to the nearest integer, use the roundProps
  * special property. Just pass in an Array containing the property names that you'd like rounded. For example,

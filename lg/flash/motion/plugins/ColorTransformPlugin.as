@@ -6,7 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
-	import flash.display.DisplayObject;
+	import lg.flash.motion.plugins.TweenPlugin;
 	import flash.geom.ColorTransform;
 /**
  * Ever wanted to tween ColorTransform properties of a DisplayObject to do advanced effects like overexposing, altering

@@ -5,12 +5,11 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
-	import flash.display.DisplayObject;
+	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 	import flash.geom.ColorTransform;
 	import flash.geom.Transform;
-	import lg.flash.motion.TweenLite;
-	import lg.flash.motion.core.PropTween;
-	import lg.flash.motion.plugins.TweenPlugin;
+	import flash.display.DisplayObject;
 /**
  * To change a DisplayObject's tint/color, set this to the hex value of the tint you'd like
  * to end up at (or begin at if you're using <code>TweenMax.from()</code>). An example hex value would be <code>0xFF0000</code>.<br /><br />
@@ -89,5 +88,6 @@ package lg.flash.motion.plugins {
 			}
 			_transform.colorTransform = _ct;
 		}
+		
 	}
 }

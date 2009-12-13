@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * Some components require resizing with setSize() instead of standard tweens of width/height in
  * order to scale properly. The SetSizePlugin accommodates this easily. You can define the width, 

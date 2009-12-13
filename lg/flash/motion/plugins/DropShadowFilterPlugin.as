@@ -6,6 +6,7 @@
  **/
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
+	import lg.flash.motion.plugins.FilterPlugin;
 	import flash.filters.DropShadowFilter;
 /**
  * Tweens a DropShadowFilter. The following properties are available (you only need to define the ones you want to tween):

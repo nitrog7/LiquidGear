@@ -1,24 +1,20 @@
 ﻿/**
- * VERSION: 11.104
- * DATE: 11/7/2009
+ * VERSION: 11.12
+ * DATE: 11/25/2009
  * AS3 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com 
  **/
 package lg.flash.motion {
-	import lg.flash.motion.core.TweenCore;
-	import lg.flash.motion.core.SimpleTimeline;
 	import lg.flash.motion.core.PropTween;
+	import lg.flash.motion.core.SimpleTimeline;
 	import lg.flash.events.TweenEvent;
 	import lg.flash.motion.plugins.*;
 	
-	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.IEventDispatcher;
-	import flash.events.EventDispatcher;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
-	import flash.utils.getTimer;
-	
 /**
  * 	TweenMax extends the extremely lightweight, fast TweenLite engine, adding many useful features
  * 	like timeScale, event dispatching, setDestination(), yoyo, repeat, repeatDelay, rounding, and more. It also 
@@ -289,7 +285,7 @@ package lg.flash.motion {
  */
 	public class TweenMax extends TweenLite implements IEventDispatcher {
 		/** @private **/
-		public static const version:Number = 11.104;
+		public static const version:Number = 11.12;
 		
 		TweenPlugin.activate([
 			
@@ -418,7 +414,7 @@ package lg.flash.motion {
 			}
 			//accommodate rounding if necessary...
 			if (this.vars.roundProps != null && "roundProps" in TweenLite.plugins) {
-				var j:int, prop:String, multiProps:String, rp:Array = this.vars.roundProps, plugin:Object, pt:PropTween;
+				var j:int, prop:String, multiProps:String, rp:Array = this.vars.roundProps, plugin:Object, ptPlugin:PropTween, pt:PropTween;
 				var i:int = rp.length;
 				while (i--) {
 					prop = rp[i];
@@ -432,11 +428,12 @@ package lg.flash.motion {
 									plugin = new TweenLite.plugins.roundProps();
 									plugin.add(pt.target, prop, pt.start, pt.change);
 									_hasPlugins = true;
-									this.cachedPT1 = insertPropTween(plugin, "changeFactor", 0, 1, "_MULTIPLE_", true, this.cachedPT1);
+									this.cachedPT1 = ptPlugin = insertPropTween(plugin, "changeFactor", 0, 1, "_MULTIPLE_", true, this.cachedPT1);
 								} else {
 									plugin.add(pt.target, prop, pt.start, pt.change); //using a single plugin for rounding speeds processing
 								}
 								this.removePropTween(pt);
+								this.propTweenLookup[prop] = ptPlugin;
 							}
 						} else if (pt.isPlugin && pt.name == "_MULTIPLE_" && !pt.target.round) {
 							multiProps = " " + pt.target.overwriteProps.join(" ") + " ";
@@ -781,7 +778,7 @@ package lg.flash.motion {
 		override public function complete(skipRender:Boolean=false, suppressEvents:Boolean=false):void {
 			super.complete(skipRender, suppressEvents);
 			if (!suppressEvents && _dispatcher) {
-				if (this.cachedTime == this.cachedDuration && !this.cachedReversed) {
+				if (this.cachedTotalTime == this.cachedTotalDuration && !this.cachedReversed) {
 					_dispatcher.dispatchEvent(new TweenEvent(TweenEvent.COMPLETE));
 				} else if (this.cachedReversed && this.cachedTotalTime == 0) {
 					_dispatcher.dispatchEvent(new TweenEvent(TweenEvent.REVERSE_COMPLETE));

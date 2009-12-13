@@ -7,7 +7,6 @@
 package lg.flash.motion.plugins {
 	import lg.flash.motion.TweenLite;
 	import lg.flash.motion.core.PropTween;
-	import lg.flash.motion.plugins.TweenPlugin;
 /**
  * TweenPlugin is the base class for all TweenLite/TweenMax plugins. <br /><br />
  * 	
