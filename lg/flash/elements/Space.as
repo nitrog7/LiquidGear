@@ -41,17 +41,11 @@ package lg.flash.elements {
 	import org.papervision3d.objects.primitives.Cube;
 	import org.papervision3d.objects.DisplayObject3D;
 	import org.papervision3d.core.render.clipping.ClipFlags;
-	//import org.papervision3d.core.effects.view.ReflectionView;
-	//import org.papervision3d.core.clipping.FrustumClipping;
 	
 	//LG Classes
 	import lg.flash.events.ElementEvent;
 	import lg.flash.elements.VisualElement;
-	import lg.flash.space.VisualElement3D;
 	import flash.display.DisplayObject;
-
-	//import lg.flash.space.Paper;
-	//import lg.flash.space.Box;
 	
 	
 	/**
@@ -112,11 +106,11 @@ package lg.flash.elements {
 			camObj.z				= 0;
 			camObj.fov				= 60;
 			camObj.near				= 1;
-			camObj.far				= 10000;
+			camObj.far				= 5000;
 			camObj.rotationX		= 0;
 			camObj.rotationY		= 0;
 			camObj.rotationZ		= 0;
-			camObj.enableCulling	= false;
+			camObj.enableCulling	= true;
 			camObj.showFrustum		= false;
 			
 			//Set Attributes
@@ -259,7 +253,7 @@ package lg.flash.elements {
 			unbind('element_enter', onEnter);
 			//unbind(ElementEvent.MOUSEDOWN, moveByDrag);
 			
-			_renderer.destroy();
+			_renderer.kill();
 			
 			for(var s:String in children) {
 				removeChild(children[s]);

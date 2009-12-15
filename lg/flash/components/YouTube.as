@@ -131,7 +131,7 @@ package lg.flash.components {
 			
 			if(data.src != '') {
 				data.isReady	= true;
-				addVideo(data.src, data.start);
+				load(data.src, data.start);
 			}
 			else if(data.ytID != '') {
 				data.isReady	= false;
@@ -155,7 +155,7 @@ package lg.flash.components {
 			
 			if(data.thumbnailSrc != '') {
 				if(thumbnail) {
-					thumbnail.addImage(data.thumbnailSrc);
+					thumbnail.load(data.thumbnailSrc);
 				} else {
 					thumbnail	= new Image({id:'thumbnail', src:data.thumbnailSrc, basePath:basePath, width:width, height:height});
 					thumbnail.loaded(onLoadThumb);

@@ -5,16 +5,19 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com 
  **/
 package lg.flash.motion {
+	import lg.flash.motion.core.TweenCore;
 	import lg.flash.motion.core.PropTween;
 	import lg.flash.motion.core.SimpleTimeline;
 	import lg.flash.events.TweenEvent;
 	import lg.flash.motion.plugins.*;
 	
+	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.IEventDispatcher;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 /**
  * 	TweenMax extends the extremely lightweight, fast TweenLite engine, adding many useful features
  * 	like timeScale, event dispatching, setDestination(), yoyo, repeat, repeatDelay, rounding, and more. It also 

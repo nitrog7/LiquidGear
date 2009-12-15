@@ -89,15 +89,15 @@ package lg.flash.effects {
 			
 			//set the values for the gradient fill
 			var fillType:String			= GradientType.LINEAR;
-		 	var colors:Vector.<uint>	= new Vector.<uint>(2, true);
+		 	var colors:Array			= [];
 		 	colors[0]					= 0xFFFFFF;
 		 	colors[1]					= 0xFFFFFF;
 		 	
-		 	var alphas:Vector.<Number>	= new Vector.<Number>(2, true);
+		 	var alphas:Array			= [];
 		 	alphas[0]					= obj.alpha;
 		 	alphas[1]					= 0;
 		 	
-		 	var ratios:Vector.<Number>	= new Vector.<Number>(2, true);
+		 	var ratios:Array			= [];
 		 	ratios[0]					= 0;
 		 	ratios[1]					= obj.ratio;
 		 	

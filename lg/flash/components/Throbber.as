@@ -116,7 +116,7 @@ package lg.flash.components {
 			var leaf:VisualElement;
 			
 			while(g--) {
-				leaf	= throbber.getChildAt(g);
+				leaf	= throbber.getChildAt(g) as VisualElement;
 				throbber.removeChildAt(g);
 				leaf.kill();
 			}

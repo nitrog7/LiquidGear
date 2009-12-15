@@ -538,7 +538,7 @@ package lg.flash.elements {
 		*	@param fn Click function.
 		*	@param fn2 Click function.**/
 		public function toggle(fn:Function=null, fn2:Function=null):Element {
-			toggleFunctions		= [];
+			toggleFunctions		= new Vector.<Function>(2, true);
 			toggleFunctions[0]	= fn;
 			toggleFunctions[1]	= fn2;
 			

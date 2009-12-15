@@ -5,6 +5,7 @@
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
  **/
 package lg.flash.motion.plugins {
+	import flash.display.MovieClip;
 	import lg.flash.motion.TweenLite;
 	import lg.flash.motion.plugins.FramePlugin;
 /**
