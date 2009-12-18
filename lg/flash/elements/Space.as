@@ -150,7 +150,7 @@ package lg.flash.elements {
 			
 			//Renderer
 			_renderer				= new BasicRenderEngine();
-			_renderer.clipFlags 	= ClipFlags.ALL;
+			_renderer.clipFlags 	= ClipFlags.NEAR;
 			
 			isSetup = true;
 			bind(ElementEvent.ADD, onAddedToStage);

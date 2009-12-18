@@ -35,6 +35,7 @@ package lg.flash.components.buttons {
 	public class HoverButton extends VisualElement {
 		private var _outClip:VisualElement;
 		private var _overClip:VisualElement;
+		private var _clickClip:VisualElement;
 		
 		public function HoverButton(obj:Object) {
 			super();
@@ -44,6 +45,7 @@ package lg.flash.components.buttons {
 			
 			data.out		= null;
 			data.over		= null;
+			data.click		= null;
 			data.duration	= 0;
 			data.stretch	= false;
 			
@@ -58,19 +60,31 @@ package lg.flash.components.buttons {
 				_overClip		= data.out as VisualElement;
 			}
 			
+			if(data.click) {
+				_clickClip		= data.click as VisualElement;
+			} else {
+				_clickClip		= data.out as VisualElement;
+			}
+			
 			_outClip.ghost();
 			_overClip.ghost();
+			_clickClip.ghost();
 			
-			_overClip.hidden	= true;
 			_outClip.hidden		= false;
+			_overClip.hidden	= true;
+			_clickClip.hidden	= true;
 			
 			addChild(_outClip);
 			addChild(_overClip);
+			addChild(_clickClip);
 			
 			_outClip.setPos(0, 0);
 			_overClip.setPos(0, 0);
+			_clickClip.setPos(0, 0);
 			
 			hover(onButtonOver, onButtonOut);
+			click(onButtonClick);
+			mousedown(onButtonClick);
 			
 			isSetup = true;
 		}
@@ -79,9 +93,11 @@ package lg.flash.components.buttons {
 			if(data.duration > 0) {
 				_overClip.animate({duration:data.duration, autoAlpha:0});
 				_outClip.animate({duration:data.duration, autoAlpha:1});
+				_clickClip.animate({duration:data.duration, autoAlpha:0});
 			} else {
 				_overClip.hidden	= true;
 				_outClip.hidden		= false;
+				_clickClip.hidden	= true;
 			}
 		}
 		
@@ -89,9 +105,23 @@ package lg.flash.components.buttons {
 			if(data.duration > 0) {
 				_overClip.animate({duration:data.duration, autoAlpha:1});
 				_outClip.animate({duration:data.duration, autoAlpha:0});
+				_clickClip.animate({duration:data.duration, autoAlpha:0});
 			} else {
 				_overClip.hidden	= false;
 				_outClip.hidden		= true;
+				_clickClip.hidden	= true;
+			}
+		}
+		
+		private function onButtonClick(e:ElementEvent):void {
+			if(data.duration > 0) {
+				_overClip.animate({duration:data.duration, autoAlpha:0});
+				_outClip.animate({duration:data.duration, autoAlpha:0});
+				_clickClip.animate({duration:data.duration, autoAlpha:1});
+			} else {
+				_overClip.hidden	= true;
+				_outClip.hidden		= true;
+				_clickClip.hidden	= false;
 			}
 		}
 		
@@ -99,8 +129,9 @@ package lg.flash.components.buttons {
 			data.width		= value;
 			
 			if(data.width != undefined && data.width >= 0) {
-				_outClip.width	= data.width;
-				_overClip.width	= data.width;
+				_outClip.width		= data.width;
+				_overClip.width		= data.width;
+				_clickClip.width	= data.width;
 			}
 		}
 		
@@ -118,6 +149,7 @@ package lg.flash.components.buttons {
 			if(data.width != undefined && data.width >= 0) {
 				_outClip.height		= data.height;
 				_overClip.height	= data.height;
+				_clickClip.height	= data.height;
 			}
 		}
 		
@@ -135,9 +167,11 @@ package lg.flash.components.buttons {
 			
 			removeChild(_outClip);
 			removeChild(_overClip);
+			removeChild(_clickClip);
 			
 			_outClip	= null;
 			_overClip	= null;
+			_clickClip	= null;
 		}
 	}
 }

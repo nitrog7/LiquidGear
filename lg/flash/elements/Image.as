@@ -57,14 +57,6 @@ package lg.flash.elements {
 		/** Bitmap object containing the loaded image **/
 		public var image:Bitmap;
 		
-		
-		/** @private **/
-		private var _ldr:Loader;
-		/** @private **/
-		private var _glowSize:Number	= 3;
-		/** @private **/
-		private var _glowColor:uint		= 0xffffff;
-		
 		/** 
 		*	Constructs a new Image object
 		*	@param obj Object containing all properties to construct the class	
@@ -138,6 +130,7 @@ package lg.flash.elements {
 			if(position == 'stretch') {
 				setSize(data.stage.stageWidth, data.stage.stageHeight);
 			} else {
+				trace('Image::width', id, data.width);
 				if(data.width != undefined && data.width >= 0) {
 					width	= data.width;
 				} else {
@@ -166,32 +159,18 @@ package lg.flash.elements {
 				var bitmap:Bitmap	= Bitmap(ldr.content);
 				addBitmap(bitmap);
 			}
-			
-			removeLoader();
 		}
 		
 		/** @private **/
 		private function onError(e:IOErrorEvent):void {
 			trigger(ElementEvent.ERROR, null, e);
 			trace('IO Error: '+e.text);
-			removeLoader();
 		}
 		
 		/** Get the bounds of the element **/
 		public override function elementBounds():Rectangle {
 			var bounds:Rectangle	= new Rectangle(0, 0, image.width, image.height);
 			return bounds;
-		}
-		
-		/** @private **/
-		private function removeLoader():void {
-			if(_ldr) {
-				_ldr.contentLoaderInfo.removeEventListener('complete', onLoaded);
-				_ldr.contentLoaderInfo.removeEventListener('progress', onProgress);
-				_ldr.contentLoaderInfo.removeEventListener('ioError', onError);
-			}
-			
-			_ldr	= null;
 		}
 		
 		public function clone(getBitmap:Boolean=false):Bitmap {
@@ -227,9 +206,10 @@ package lg.flash.elements {
 			//Nullify values
 			//alt			= null;
 			src			= null;
-			image		= null;
 			
-			removeLoader();
+			//Image
+			removeChild(image);
+			image		= null;
 			
 			super.kill();
 		}

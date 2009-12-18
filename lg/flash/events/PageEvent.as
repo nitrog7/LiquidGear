@@ -31,6 +31,7 @@ package lg.flash.events {
 		public static var MOUSEOUT:String	= 'page_mouseout';
 		public static var MOUSEDOWN:String	= 'page_mousedown';
 		public static var MOUSEUP:String	= 'page_mouseup';
+		public static var MOUSEMOVE:String	= 'page_mousemove';
 		public static var CLICK:String		= 'page_click';
 		
 		/** The element details. **/
