@@ -190,7 +190,7 @@ package lg.flash.elements {
 			this.src		= src;
 			data.isFinished = false;
 			data.isLoaded	= false;
-			
+			trace('Video::load', src);
 			//NetConnection
 			_connection	= new NetConnection();
 			_connection.connect(null);
@@ -271,20 +271,22 @@ package lg.flash.elements {
 		
 		/** @private **/
 		private function onMetaVideo(e:ElementEvent):void {
+			trace('onMetaVideo1');
 			var info:Object	= e.data;
 			if(!info) {
 				return;
 			}
 			
+			trace('onMetaVideo2');
 			data.current	= 0;
 			fps				= 0;
 			
 			//Resize Video
-			if(data.width == undefined || data.width < 0) {
-				data.width = info.width;
+			if(isNaN(data.width)) {
+				data.width	= info.width;
 			}
-			if(data.height == undefined || data.height < 0) {
-				data.height = info.height;
+			if(isNaN(data.height)) {
+				data.height	= info.height;
 			}
 			
 			resetSize();
@@ -494,6 +496,10 @@ package lg.flash.elements {
 		/** @private **/
 		private function resetSize():void {
 			if(!isSetup) {
+				return;
+			}
+			trace('width', width, height);
+			if(isNaN(width) || isNaN(height)) {
 				return;
 			}
 			

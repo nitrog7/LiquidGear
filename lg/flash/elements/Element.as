@@ -254,17 +254,24 @@ package lg.flash.elements {
 		}
 		
 		/** @private **/
-		protected function setAttributes(obj:Object):void {
+		protected function setAttributes(obj:Object, ignore:Array=null):void {
 			if(!obj) {
 				return;
 			}
 			
 			if(obj.id) {
-				obj.name	= obj.id;
+				id			= obj.id;
+				obj.name	= id;
 			}
 			
 			for(var s:String in obj) {
 				data[s] 	= obj[s];
+				
+				if(ignore) {
+					if(ignore.indexOf(s) >= 0) {
+						continue;
+					}
+				}
 				
 				if(s in this) {
 					if(obj[s] == 'true') {

@@ -38,6 +38,7 @@ package lg.flash.elements {
 	import flash.events.IOErrorEvent;
 	import flash.system.LoaderContext;
 	import flash.geom.Rectangle;
+	import flash.external.ExternalInterface;
 	
 	import lg.flash.elements.VisualElement;
 	import lg.flash.events.ElementEvent;
@@ -53,10 +54,6 @@ package lg.flash.elements {
 		//Public Vars
 		//public var alt:String			= '';
 		
-		//Components
-		/** Bitmap object containing the loaded image **/
-		public var image:Bitmap;
-		
 		/** 
 		*	Constructs a new Image object
 		*	@param obj Object containing all properties to construct the class	
@@ -69,12 +66,16 @@ package lg.flash.elements {
 			data.x			= 0;
 			data.y			= 0;
 			data.src		= '';
+			data.image		= null;
 			
 			//Set Attributes
-			setAttributes(obj);
+			setAttributes(obj, ['src', 'image', 'width', 'height']);
 			
-			if(image != null) {
-				addBitmap(image);
+			if(data.src != '') {
+				src		= obj.src;
+			}
+			else if(data.image != null) {
+				image	= obj.image;
 			}
 			
 			isSetup = true;
@@ -119,28 +120,35 @@ package lg.flash.elements {
 			}
 		}
 		
-		/** @private **/
-		private function addBitmap(bitmap:Bitmap):void {
+		/** Bitmap object containing the loaded image **/
+		public function get image():Bitmap {
+			return data.image;
+		}
+		public function set image(value:Bitmap):void {
+			if(!value) {
+				return;
+			}
+			
 			clean();
-			image				= bitmap;
-			image.smoothing		= true;
-			addChild(image);
+			
+			data.image		= value;
+			value.smoothing	= true;
+			addChild(value);
 			
 			//Set size to content if not already set
 			if(position == 'stretch') {
 				setSize(data.stage.stageWidth, data.stage.stageHeight);
 			} else {
-				trace('Image::width', id, data.width);
-				if(data.width != undefined && data.width >= 0) {
+				if(!isNaN(data.width)) {
 					width	= data.width;
 				} else {
-					width	= image.width;
+					width	= value.width;
 				}
 				
-				if(data.height != undefined && data.height >= 0) {
+				if(!isNaN(data.height)) {
 					height	= data.height;
 				} else {
-					height	= image.height;
+					height	= value.height;
 				}
 			}
 			
@@ -156,8 +164,7 @@ package lg.flash.elements {
 			var ldr:Loader	= loadInfo.loader;
 			
 			if(ldr.content && ldr.content is Bitmap) {
-				var bitmap:Bitmap	= Bitmap(ldr.content);
-				addBitmap(bitmap);
+				image	= Bitmap(ldr.content);
 			}
 		}
 		
