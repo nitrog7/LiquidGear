@@ -29,20 +29,18 @@
 
 package lg.flash.elements {
 	//Flash Classes
-	import flash.media.Video;
-	import flash.media.SoundTransform;
-	import flash.net.NetStream;
-	import flash.net.NetConnection;
-	import flash.net.LocalConnection;
-	import flash.utils.Timer;
-	import flash.events.Event;
-	import flash.events.NetStatusEvent;
 	import flash.events.AsyncErrorEvent;
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.events.NetStatusEvent;
+	import flash.events.SecurityErrorEvent;
 	import flash.events.TimerEvent;
-	import flash.system.System;
+	import flash.media.SoundTransform;
+	import flash.media.Video;
+	import flash.net.NetConnection;
+	import flash.net.NetStream;
+	import flash.utils.Timer;
 	
-	//LG Classes
-	import lg.flash.elements.Image;
 	import lg.flash.events.ElementEvent;
 	import lg.flash.motion.Tween;
 	import lg.flash.motion.easing.Quint;
@@ -104,7 +102,7 @@ package lg.flash.elements {
 		public var fps:Number				= 0;
 		/** Video buffer. If 1, wait till video is fully buffered before playing. If .5, wait till half the video is loaded before playing.
 		*	@default 1 **/
-		public var buffer:Number			= 1;
+		public var buffer:Number			= 0;
 		
 		//Components
 		/** Netstream object used to load video stream. **/
@@ -118,6 +116,8 @@ package lg.flash.elements {
 		public var overlay:Image;
 		/** @private **/
 		public var thumbnail:Image;
+		/** @private **/
+		private var _client:Object;
 		/** @private **/
 		private var _videoTimer:Timer;
 		/** @private **/
@@ -143,6 +143,7 @@ package lg.flash.elements {
 			data.muted				= false;
 			data.backgroundAlpha	= 1;
 			data.backgroundColor	= 0x000000;
+			data.transparent		= false;
 			
 			//Set Attributes
 			setAttributes(obj);
@@ -152,6 +153,17 @@ package lg.flash.elements {
 			data.bytesTotal		= 0;
 			data.duration		= 0;
 			data.current		= -1;
+			
+			//Client
+            _client				= {};
+			_client.onCuePoint	= onMetaData;
+			_client.onMetaData	= onMetaData;
+			_client.onBWDone	= onBWDone;
+			_client.close		= onStreamClose;
+			
+			//Update Timer
+			_updateTimer = new Timer(1000, 0);
+			_updateTimer.addEventListener(TimerEvent.TIMER, onUpdateVideo, false, 0, true);
 			
 			if(data.type == 'video') {
 				//Video Buffer Timer
@@ -174,10 +186,6 @@ package lg.flash.elements {
 				addChild(overlay);
 			}
 			
-			//Update Timer
-			_updateTimer = new Timer(500, 0);
-			_updateTimer.addEventListener(TimerEvent.TIMER, onUpdateVideo, false, 0, true);
-			
 			isSetup = true;
 		}
 		
@@ -187,39 +195,14 @@ package lg.flash.elements {
 		*	@param src The relative path to the video source.	
 		**/
 		public function load(src:String, seconds:Number=0, quality:String='default', forceLoad:Boolean=false):void {
+			//Clean
+			//clean();
+			
 			this.src		= src;
 			data.isFinished = false;
 			data.isLoaded	= false;
-			trace('Video::load', src);
-			//NetConnection
-			_connection	= new NetConnection();
-			_connection.connect(null);
-			_connection.client = this;
 			
-			//Video
-			videoClip			= new flash.media.Video();
-			videoClip.smoothing	= true;
-			videoClip.visible	= false;
-			videoClip.name		= 'video';
-			videoClip.addEventListener(Event.ADDED_TO_STAGE, onStageVideo, false, 0, true);
-			addChild(videoClip);
-			
-			//Netstream Listeners
-			var videoListener:Object	= {};
-			videoListener.onMetaData	= function(info:Object):void {trigger('element_video_meta', info);};
-			videoListener.onPlayStatus	= function(info:Object):void {trigger('element_video_status', info);};
-			bind('element_video_meta', onMetaVideo);
-			bind('element_video_status', onFinishVideo);
-			
-			//Netstream
-			video			= new NetStream(_connection);
-			video.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onErrorAsync, false, 0, true);
-			video.addEventListener(NetStatusEvent.NET_STATUS, onStatusVideo, false, 0, true);
-			video.client	= videoListener;
-			videoClip.attachNetStream(video);
-			video.play(basePath+src, 0);
-			video.pause();
-			
+			initStream();
 			
 			if(buffer == 0) {
 				_videoTimer.stop();
@@ -227,10 +210,45 @@ package lg.flash.elements {
 			} else {
 				_videoTimer.start();
 			}
-			
-			isSetup			= true;
 		}
 		
+		private function initStream():void {
+			try {
+				//NetConnection
+				_connection	= new NetConnection();
+				_connection.client = _client;
+				_connection.addEventListener(NetStatusEvent.NET_STATUS, onStatusVideo);
+				_connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onErrorSecurity, false, 0, true);
+				_connection.connect(null);
+			} catch (e:Error) {
+				trace("An error has occured with the flv stream:" + e.message);
+			}
+        }
+        
+		private function playStream():void {
+			data.isInit				= false;
+			
+			//Netstream
+			video					= new NetStream(_connection);
+			video.checkPolicyFile	= true;
+			video.client			= _client;
+			video.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onErrorAsync, false, 0, true);
+			video.addEventListener(NetStatusEvent.NET_STATUS, onStatusVideo, false, 0, true);
+			video.addEventListener(IOErrorEvent.IO_ERROR,onErrorLoad,false,0,true);
+			play();
+			
+			if(videoClip == null){
+				videoClip			= new flash.media.Video();
+				videoClip.smoothing	= true;
+				videoClip.visible	= false;
+				videoClip.name		= 'video';
+				videoClip.addEventListener(Event.ADDED_TO_STAGE, onStageVideo, false, 0, true);
+				addChild(videoClip);
+			}
+			
+			videoClip.attachNetStream(video);
+        }
+        
 		/** @private **/
 		private function onLoaded():void {
 			data.isLoaded	= true;
@@ -243,6 +261,16 @@ package lg.flash.elements {
 		}
 		
 		/** @private **/
+		private function onErrorLoad(e:IOErrorEvent):void {
+			trace('Video::IOErrorEvent', e.toString());
+		}
+		
+		/** @private **/
+		private function onErrorSecurity(e:SecurityErrorEvent):void {
+			trace("A security error occured: "+e.text+" Remember that the FLV must be in the same security sandbox as your SWF.");
+		}
+		
+		/** @private **/
 		private function onStageVideo(e:Event):void {
 			videoClip.x	= 0;
 			videoClip.y	= 0;
@@ -251,16 +279,22 @@ package lg.flash.elements {
 		/** @private **/
 		private function onStatusVideo(e:NetStatusEvent):void {
 			switch(e.info.code) {
+                case "NetConnection.Connect.Success":
+                	trace('onStatusVideo::NetConnection.Connect.Success');
+					playStream();
+					break;
 				case 'NetStream.Play.Start':
+                	trace('onStatusVideo::NetStream.Play.Start');
 					//data.isLoaded	= true;
 					break;
 				case 'NetStream.Play.Stop':
+                	trace('onStatusVideo::NetStream.Play.Stop');
 					if(isPlaying) {
 						onFinishVideo();
 					}
 					break;
 				case "NetStream.Play.StreamNotFound":
-                    trace("Unable to locate video: " + basePath+src);
+                    trace("Unable to locate video: " + src);
                     break;
                 case 'NetStream.Seek.InvalidTime':
                     trace("InvalidTime: ", e.info.details);
@@ -270,14 +304,11 @@ package lg.flash.elements {
 		}
 		
 		/** @private **/
-		private function onMetaVideo(e:ElementEvent):void {
-			trace('onMetaVideo1');
-			var info:Object	= e.data;
-			if(!info) {
+		private function onMetaData(info:Object):void {
+			if(data.isInit) {
 				return;
 			}
 			
-			trace('onMetaVideo2');
 			data.current	= 0;
 			fps				= 0;
 			
@@ -300,15 +331,12 @@ package lg.flash.elements {
 		      	scaleY = scale;
 			}
 			
-			//Display video
-			if(!data.isInit) {
-				volume	= data.volume;
+			volume	= data.volume;
 				
-				if(!autoPlay) {
-					pause();
-				} else {
-					play();
-				}
+			if(!autoPlay) {
+				pause();
+				//} else {
+				//	play();
 			}
 			
 			videoClip.visible	= true;
@@ -321,8 +349,16 @@ package lg.flash.elements {
 			data.isInit	= true;
 		}
 		
+		private function onBWDone():void {
+			//Must be present to prevent errors for RTMP, but won't do anything
+		}
+	    private function onStreamClose():void {
+			 trace("The stream was closed. Incorrect URL?");
+		}
+		
 		/** @private **/
 		private function onFinishVideo(e:ElementEvent=null):void {
+			trace('Video::onFinishVideo', data.isFinished);
 			if(data.isFinished) {
 				return;
 			}
@@ -334,6 +370,7 @@ package lg.flash.elements {
 				rewind();
 			}
 			else if(autoClean) {
+			//if(autoClean) {
 				clean();
 			} else {
 				trigger('element_finish');
@@ -353,6 +390,7 @@ package lg.flash.elements {
 		
 		/** @private **/
 		private function onWaitVideo(e:TimerEvent):void {
+			trace('Video::onWaitVideo');
 			if(video.bytesTotal > 0 && (video.bytesLoaded/video.bytesTotal) >= buffer && !data.isLoaded) {
 				onLoaded();
 			}
@@ -399,10 +437,11 @@ package lg.flash.elements {
 		}
 		/** Play the video stream **/
 		public function play():void {
+			trace('Video::play');
 			if(video) {
 				if(!data.isLoaded) {
-					video.play(basePath+src, 0);
-					data.isLoaded	= true;
+					video.play(src);
+					//data.isLoaded	= true;
 				} else {
 					video.resume();
 				}
@@ -412,13 +451,14 @@ package lg.flash.elements {
 				data.isFinished	= false;
 				cacheAsBitmap	= false;
 				
-				_updateTimer.start();
+				//_updateTimer.start();
 				trigger('element_play');
 			}
 		}
 		
 		/** Stop the video, remove from stage, and clean from memory. **/
 		public function stop():void {
+			trace('Video::stop');
 			if(video && isPlaying) {
 				video.pause();
 				seek(0);
@@ -428,6 +468,7 @@ package lg.flash.elements {
 		
 		/** Pause the video. **/
 		public function pause():void {
+			trace('Video::pause');
 			if(video) {
 				data.isPlaying	= false;
 				data.isPaused	= true;
@@ -440,6 +481,7 @@ package lg.flash.elements {
 		
 		/** Rewind the video to the beginning. **/
 		public function rewind():void {
+			trace('Video::rewind');
 			seek(0);
 		}
 		
@@ -447,10 +489,15 @@ package lg.flash.elements {
 		*	@param seconds A number, in seconds, indicating the position of the playhead to jump to.
 		**/
 		public function seek(seconds:Number):void {
+			trace('Video::seek');
 			if(video) {
 				data.current	= seconds;
+				
+				video.pause();
 				video.seek(seconds);
+				video.resume();
 			}
+			
 			trigger('element_update');
 		}
 		
@@ -498,7 +545,7 @@ package lg.flash.elements {
 			if(!isSetup) {
 				return;
 			}
-			trace('width', width, height);
+			trace('Video::resetSize', width, height);
 			if(isNaN(width) || isNaN(height)) {
 				return;
 			}
@@ -531,6 +578,23 @@ package lg.flash.elements {
 		}
 		public function set backgroundAlpha(value:Number):void {
 			data.backgroundAlpha = value;
+			resetSize();
+		}
+		
+		/** Toggles background alpha between 0 (true) and 1 (false).
+		*	@default false **/
+		public function get transparent():Boolean {
+			return data.transparent;
+		}
+		public function set transparent(value:Boolean):void {
+			data.transparent	= value;
+			
+			if(value) {
+				data.backgroundAlpha = 0;
+			} else {
+				data.backgroundAlpha = 1;
+			}
+			
 			resetSize();
 		}
 		
@@ -629,10 +693,11 @@ package lg.flash.elements {
 		
 		/** Kill the object and clean from memory. **/
 		public override function kill():void {
+			trace('Video::kill');
 			clean();
 			
-			unbind('element_video_meta', onMetaVideo);
-			unbind('element_video_status', onFinishVideo);
+			//unbind('element_video_meta', onMetaVideo);
+			//unbind('element_video_status', onFinishVideo);
 			
 			//Nullify values
 			src				= null;

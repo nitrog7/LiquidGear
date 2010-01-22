@@ -220,8 +220,6 @@ package lg.flash.elements {
 		/** @private **/
 		private var _listners:Object	= {};
 		/** @private **/
-		private var _mouseTimer:Timer;
-		/** @private **/
 		private var _lmLoaded:Vector.<String>			= new Vector.<String>();
 		/** @private **/
 		private var _lmTotal:Vector.<String>			= new Vector.<String>();
@@ -408,10 +406,10 @@ package lg.flash.elements {
 				
 				elements[elName]	= null;
 				
-				if(element is Element) {
-					var lgElement:Element = element as Element;
-					lgElement.kill();
-				}
+				//if(element is Element) {
+				//	var lgElement:Element = element as Element;
+				//	lgElement.kill();
+				//}
 				
 				super.removeChild(element);
 			}
@@ -923,42 +921,6 @@ package lg.flash.elements {
 			useHandCursor	= false;
 		}
 		
-		//Positioning
-		/** Pulls the element in the front of the existing children. **/
-		public function toFront():void {
-			parent.setChildIndex(this, parent.numChildren-1);
-		}
-		/** Pushes the element to the back, behind all the elements within the parent **/
-		public function toBack():void {
-			parent.setChildIndex(this, 1);
-		}
-		
-		
-		/** The Flash Player has a bad habit of losing the mouse when the mouse
-		*	goes off screen. When this method is called, it monitors whether or 
-		*	not the mouse is still over the element. This can reduce performance
-		*	slightly so use it sparingly. **/
-		public function startMonitorMouse():void {
-			_mouseTimer = new Timer(750, 0);
-			_mouseTimer.start();
-			_mouseTimer.addEventListener(TimerEvent.TIMER, checkMouseOut, false, 0, true);
-		}
-		/** Stops the mouse monitor. **/
-		public function stopMonitorMouse():void {
-			_mouseTimer.stop();
-			_mouseTimer.removeEventListener(TimerEvent.TIMER, checkMouseOut);
-		}
-		
-		/** @private **/
-		private function checkMouseOut(e:TimerEvent):void {
-			var localMouse:Point	= new Point(mouseX, mouseY);
-			var globalMouse:Point	= localToGlobal(localMouse);
-			
-			if(!hitTestPoint(globalMouse.x, globalMouse.y, true)) {
-				trigger('element_mouseout');
-			}
-		}
-		
 		/** Indicates whether the element has been setup. **/
 		public function set isSetup(value:Boolean):void {
 			data.isSetup = value;
@@ -1000,10 +962,6 @@ package lg.flash.elements {
 			removeEventListener('removeFromStage', onUnload);
 			removeEventListener('enterFrame', onEnter);
 			
-			if(_mouseTimer) {
-				_mouseTimer.removeEventListener(TimerEvent.TIMER, checkMouseOut);
-			}
-			
 			//Remove Listeners
 			for(var s:String in _listners) {
 				var listenArray:Array	= _listners[s];
@@ -1028,7 +986,6 @@ package lg.flash.elements {
 			basePath	= null;
 			data		= null;
 			_listners	= null;
-			_mouseTimer	= null;
 			//contentEditable	= null;
 		}
 	}

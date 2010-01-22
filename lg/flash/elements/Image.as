@@ -171,7 +171,7 @@ package lg.flash.elements {
 		/** @private **/
 		private function onError(e:IOErrorEvent):void {
 			trigger(ElementEvent.ERROR, null, e);
-			trace('IO Error: '+e.text);
+			trace('IO Error: id:', id, '::', e.text);
 		}
 		
 		/** Get the bounds of the element **/
@@ -215,7 +215,10 @@ package lg.flash.elements {
 			src			= null;
 			
 			//Image
-			removeChild(image);
+			if(image && contains(image)) {
+				removeChild(image);
+			}
+			
 			image		= null;
 			
 			super.kill();

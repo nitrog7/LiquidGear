@@ -58,6 +58,10 @@ package lg.flash.components {
 			//Set Attributes
 			setAttributes(obj);
 			
+			setup()
+		}
+		
+		protected function setup():void {
 			addChild(throbber);
 			
 			for (var i:int=0; i<data.leafCount; i++) {
@@ -77,7 +81,6 @@ package lg.flash.components {
 			//Update Timer
 			_updateTimer = new Timer(Math.round(data.speed / data.leafCount), 0);
 			_updateTimer.addEventListener('timer', onCycleThrob, false, 0, true);
-			_updateTimer.start();
 			
 			isSetup	= true;
 		}
@@ -105,6 +108,17 @@ package lg.flash.components {
 			}
 			
 			_leafNodeItr++;
+		}
+		
+		public function start():void {
+			_updateTimer.start();
+		}
+		
+		public function stop():void {
+			_updateTimer.stop();
+		}
+		
+		public function setPercent(decimal:Number):void {
 		}
 		
 		public override function kill():void {

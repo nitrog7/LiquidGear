@@ -108,7 +108,7 @@ package lg.flash.elements {
 				_gradMatrix	= new Matrix();
 				_gradMatrix.createGradientBox(data.width, data.height, Math.PI/2, 0, 0);
 				
-				_shape.graphics.beginGradientFill(GradientType.LINEAR, [data.color, data.gradientColor], [data.colorAlpha, data.gradientAlpha], [0, 255], _gradMatrix);
+				_shape.graphics.beginGradientFill('linear', [data.color, data.gradientColor], [data.colorAlpha, data.gradientAlpha], [0, 255], _gradMatrix);
 			} else {
 				_shape.graphics.beginFill(data.color, data.fillAlpha);
 			}
@@ -305,14 +305,16 @@ package lg.flash.elements {
 		public override function set width(value:Number):void {
 			data.width		= value;
 			create();
-			//_shape.width	= value;
 		}
 		
 		/** Indicates the height of the display object, in pixels. 
 		*	@default 50 **/
+		public override function get height():Number {
+			return data.height;
+		}
 		public override function set height(value:Number):void {
+			data.height		= value;
 			create();
-			super.height	= value;
 		}
 		
 		/** Kill the object and clean from memory. **/

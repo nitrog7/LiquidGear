@@ -29,23 +29,47 @@
 
 package lg.flash.layout {
 	//Flash
+	import flash.display.Stage;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	
-	//LG
 	import lg.flash.elements.Container;
+	import lg.flash.events.ElementDispatcher;
 	
 	/**
 	 * Support class for Container, manages layout and rendering of one or more trees of Container.
 	 * Could probably be optimized later.
 	 */
-	public class Scheduler {
-		private var timer:Timer			= new Timer(0, 1);
-		private var layoutQueue:Vector.<Container>	= new Vector.<Container>();
-		private var renderQueue:Vector.<Container>	= new Vector.<Container>();
+	public class Scheduler extends ElementDispatcher {
+		private var layoutQueue:Array	= [];
+		private var renderQueue:Array	= [];
+		private var _timer:Timer		= new Timer(1, 1);
 		
-		public function Scheduler() {
-			timer.addEventListener(TimerEvent.TIMER, onLayoutTimer);
+		public function Scheduler(stage:Stage) {
+			_timer.addEventListener(TimerEvent.TIMER, onRender);
+		}
+		
+		private function onRender(e:TimerEvent=null):void {
+			var container:Container;
+			
+			do {
+				while (container = layoutQueue.shift()) {
+					var parentContainer:Container	= container.parent as Container;
+					if (parentContainer && parentContainer.childAffectsLayout(container) && parentContainer.layoutInvalidated) {
+						continue;
+					}
+					
+					while (container.layoutInvalidated) {
+						container.performLayout();
+					}
+				}
+				
+				while (container = renderQueue.shift()) {
+					container.performRender();
+				}
+			}
+			
+			while (layoutQueue.length > 0); // render pass might have added to layout queue
 		}
 		
 		public function addedToStage(container:Container):void {
@@ -80,43 +104,23 @@ package lg.flash.layout {
 			} else {
 				layoutQueue.push(container);
 				
-				if(!timer.running) {
-					timer.start();
+				if(!_timer.running) {
+					_timer.start();
 				}
 			}
 		}
 		
 		public function requestRender(container:Container):void {
 			renderQueue.push(container);
-			if (!timer.running) timer.start();
+			
+			if (!_timer.running) {
+				_timer.start();
+			}
 		}
 		
 		public function layoutNow():void {
 			// just lay out everything waiting to be layed out
-			onLayoutTimer(null);
-		}
-		
-		private function onLayoutTimer(e:TimerEvent):void  {
-			var container:Container;
-			
-			do {
-				while (container = layoutQueue.shift()) {
-					var parentContainer:Container	= container.parent as Container;
-					if (parentContainer && parentContainer.childAffectsLayout(container) && parentContainer.layoutInvalidated) {
-						continue;
-					}
-					
-					while (container.layoutInvalidated) {
-						container.performLayout();
-					}
-				}
-				
-				while (container = renderQueue.shift()) {
-					container.performRender();
-				}
-			}
-			
-			while (layoutQueue.length > 0); // render pass might have added to layout queue
+			onRender();
 		}
 	}
 }

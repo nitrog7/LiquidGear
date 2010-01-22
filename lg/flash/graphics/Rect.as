@@ -28,7 +28,6 @@
 **/
  
 package lg.flash.graphics {
-	//Flash
 	import flash.display.DisplayObject;
 	import flash.display.Graphics;
 	
@@ -44,47 +43,88 @@ package lg.flash.graphics {
 		private var _lineAlpha:Number;
 		private var _linePixelHinting:Boolean;
 		
-		function Rect(color:uint = 0, alpha:Number = 1) {
-			_color = color;
-			_alpha = alpha;
-			_lineColor = 0;
-			_lineAlpha = 1;
-			_linePixelHinting = true;
+		function Rect(color:uint=0, alpha:Number=1) {
+			_color				= color;
+			_alpha				= alpha;
+			_lineColor			= 0;
+			_lineAlpha			= 1;
+			_linePixelHinting	= true;
 		}
 		
-		public function get radius():Number { return _radius; }
-		public function set radius(value:Number):void { _radius = value; changed(); }
+		public function get radius():Number {
+			return _radius;
+		}
 		
-		public function get color():uint { return _color; }
-		public function set color(value:uint):void  { _color = value; changed(); }
+		public function set radius(value:Number):void {
+			_radius = value;
+			changed();
+		}
 		
-		public function get alpha():Number { return _alpha; }
-		public function set alpha(value:Number):void { _alpha = value; changed(); }
+		public function get color():uint {
+			return _color;
+		}
 		
-		public function get lineColor():uint { return _lineColor; }
-		public function set lineColor(value:uint):void  { _lineColor = value; changed(); }
+		public function set color(value:uint):void {
+			_color = value;
+			changed();
+		}
 		
-		public function get lineThickness():Number { return _lineThickness; }
-		public function set lineThickness(value:Number):void { _lineThickness = value; changed(); }
+		public function get alpha():Number {
+			return _alpha;
+		}
 		
-		public function get lineAlpha():Number { return _lineAlpha; }
-		public function set lineAlpha(value:Number):void { _lineAlpha = value; changed(); }
+		public function set alpha(value:Number):void {
+			_alpha = value;
+			changed();
+		}
 		
-		public function get linePixelHinting():Boolean { return _linePixelHinting; }
-		public function set linePixelHinting(value:Boolean):void  { _linePixelHinting = value; changed(); }
-
-		public override function render(target:DisplayObject, g:Graphics, w:Number, h:Number):void  {
+		public function get lineColor():uint {
+			return _lineColor;
+		}
+		
+		public function set lineColor(value:uint):void {
+			_lineColor = value;
+			changed();
+		}
+		
+		public function get lineThickness():Number {
+			return _lineThickness;
+		}
+		public function set lineThickness(value:Number):void {
+			_lineThickness = value;
+			changed();
+		}
+		
+		public function get lineAlpha():Number {
+			return _lineAlpha;
+		}
+		public function set lineAlpha(value:Number):void {
+			_lineAlpha = value;
+			changed();
+		}
+		
+		public function get linePixelHinting():Boolean {
+			return _linePixelHinting;
+		}
+		public function set linePixelHinting(value:Boolean):void {
+			_linePixelHinting = value;
+			changed();
+		}
+		
+		override public function render(target:DisplayObject, g:Graphics, w:Number, h:Number):void {
 			g.beginFill(_color, _alpha);
 			
-			if (_lineThickness)
+			if(_lineThickness) {
 				g.lineStyle(_lineThickness, _lineColor, _lineAlpha, _linePixelHinting);
-			
-			if (_radius)
+			}
+			if(_radius) {
 				g.drawRoundRect(0, 0, w, h, _radius * 2, _radius * 2);
-			else
+			} else {
 				g.drawRect(0, 0, w, h);
+			}
 			
 			g.endFill();
 		}
 	}
 }
+

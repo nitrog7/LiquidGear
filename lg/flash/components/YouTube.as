@@ -104,7 +104,6 @@ package lg.flash.components {
 			data.isPaused	= false;
 			
 			//Mask
-			trace('data.trim', data.trim);
 			_ytMask			= new Shape({id:'ytMask', x:data.trim, y:data.trim, width:data.width - (data.trim * 2), height:data.height - (data.trim * 2)});
 			addChild(_ytMask);
 			

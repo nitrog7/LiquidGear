@@ -50,7 +50,8 @@ package lg.flash.elements {
 	
 	public class Container extends VisualElement {
 		/** @private **/
-		private static const scheduler:Scheduler = new Scheduler();
+		//private static const scheduler:Scheduler = new Scheduler();
+		private var scheduler:Scheduler;
 		
 		/** Constructs a new VisualElement object **/
 		public function Container(obj:Object=null) {
@@ -78,6 +79,7 @@ package lg.flash.elements {
 		
 		/** @private **/
 		protected function onAddToStage(e:ElementEvent):void {
+			scheduler	= new Scheduler(stage);
 			scheduler.addedToStage(this);
 		}
 		
@@ -348,6 +350,11 @@ package lg.flash.elements {
 			//Default behavior of Container: pass on our width/height/auto sizes, size ourself to content
 			for(var g:int=0; g<numChildren; g++) {
 				var child:DisplayObject	= getChildAt(g);
+				
+				if(!child) {
+					continue;
+				}
+				
 				var childSize:Size		= layoutChild(child, rect, auto);
 				size.growToFit(childSize);
 			}
@@ -396,6 +403,7 @@ package lg.flash.elements {
 		 * is to call invalidateRender() if we have a non-null background.
 		 */
 		protected function layoutSizeChanged():void {
+			update();
 			if (data.background && !data.renderInvalidated) {
 				invalidateRender();
 			}

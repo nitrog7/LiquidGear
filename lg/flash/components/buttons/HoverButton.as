@@ -31,6 +31,7 @@ package lg.flash.components.buttons {
 	//LG Classes
 	import lg.flash.events.ElementEvent;
 	import lg.flash.elements.VisualElement;
+	import lg.flash.elements.Image;
 	
 	public class HoverButton extends VisualElement {
 		private var _outClip:VisualElement;
@@ -52,35 +53,26 @@ package lg.flash.components.buttons {
 			//Set Attributes
 			setAttributes(obj);
 			
-			_outClip			= data.out as VisualElement;
+			_outClip		= data.out as VisualElement;
+			_outClip.ghost();
+			_outClip.setPos(0, 0);
+			addChild(_outClip);
 			
 			if(data.over) {
-				_overClip		= data.over as VisualElement;
-			} else {
-				_overClip		= data.out as VisualElement;
+				_overClip	= data.over as VisualElement;
+				_overClip.ghost();
+				_overClip.hide();
+				_overClip.setPos(0, 0);
+				addChild(_overClip);
 			}
 			
 			if(data.click) {
-				_clickClip		= data.click as VisualElement;
-			} else {
-				_clickClip		= data.out as VisualElement;
+				_clickClip	= data.click as VisualElement;
+				_clickClip.ghost();
+				_clickClip.hide();
+				_clickClip.setPos(0, 0);
+				addChild(_clickClip);
 			}
-			
-			_outClip.ghost();
-			_overClip.ghost();
-			_clickClip.ghost();
-			
-			_outClip.hidden		= false;
-			_overClip.hidden	= true;
-			_clickClip.hidden	= true;
-			
-			addChild(_outClip);
-			addChild(_overClip);
-			addChild(_clickClip);
-			
-			_outClip.setPos(0, 0);
-			_overClip.setPos(0, 0);
-			_clickClip.setPos(0, 0);
 			
 			hover(onButtonOver, onButtonOut);
 			click(onButtonClick);
@@ -90,48 +82,35 @@ package lg.flash.components.buttons {
 		}
 		
 		private function onButtonOut(e:ElementEvent):void {
-			if(data.duration > 0) {
-				_overClip.animate({duration:data.duration, autoAlpha:0});
-				_outClip.animate({duration:data.duration, autoAlpha:1});
-				_clickClip.animate({duration:data.duration, autoAlpha:0});
-			} else {
-				_overClip.hidden	= true;
-				_outClip.hidden		= false;
-				_clickClip.hidden	= true;
-			}
+			if(_outClip) _outClip.animate({duration:data.duration, autoAlpha:1});
+			if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:0});
+			if(_clickClip) _clickClip.animate({duration:data.duration, autoAlpha:0});
 		}
 		
 		private function onButtonOver(e:ElementEvent):void {
-			if(data.duration > 0) {
-				_overClip.animate({duration:data.duration, autoAlpha:1});
-				_outClip.animate({duration:data.duration, autoAlpha:0});
-				_clickClip.animate({duration:data.duration, autoAlpha:0});
-			} else {
-				_overClip.hidden	= false;
-				_outClip.hidden		= true;
-				_clickClip.hidden	= true;
-			}
+			if(_outClip) _outClip.animate({duration:data.duration, autoAlpha:0});
+			if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:1});
+			if(_clickClip) _clickClip.animate({duration:data.duration, autoAlpha:0});
 		}
 		
 		private function onButtonClick(e:ElementEvent):void {
-			if(data.duration > 0) {
-				_overClip.animate({duration:data.duration, autoAlpha:0});
-				_outClip.animate({duration:data.duration, autoAlpha:0});
+			if(_outClip) _outClip.animate({duration:data.duration, autoAlpha:0});
+				
+			if(_clickClip) {
 				_clickClip.animate({duration:data.duration, autoAlpha:1});
+				if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:0});
 			} else {
-				_overClip.hidden	= true;
-				_outClip.hidden		= true;
-				_clickClip.hidden	= false;
+				if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:1});	
 			}
 		}
 		
 		public override function set width(value:Number):void {
 			data.width		= value;
 			
-			if(data.width != undefined && data.width >= 0) {
-				_outClip.width		= data.width;
-				_overClip.width		= data.width;
-				_clickClip.width	= data.width;
+			if(!isNaN(data.width)) {
+				if(_outClip) _outClip.width		= data.width;
+				if(_overClip) _overClip.width		= data.width;
+				if(_clickClip) _clickClip.width	= data.width;
 			}
 		}
 		
@@ -146,7 +125,7 @@ package lg.flash.components.buttons {
 		public override function set height(value:Number):void {
 			data.height			= value;
 			
-			if(data.width != undefined && data.width >= 0) {
+			if(!isNaN(data.height)) {
 				_outClip.height		= data.height;
 				_overClip.height	= data.height;
 				_clickClip.height	= data.height;
