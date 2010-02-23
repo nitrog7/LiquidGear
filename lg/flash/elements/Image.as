@@ -32,15 +32,14 @@ package lg.flash.elements {
 	import flash.display.BitmapData;
 	import flash.display.Loader;
 	import flash.display.LoaderInfo;
-	import flash.net.URLRequest;
 	import flash.events.Event;
-	import flash.events.ProgressEvent;
 	import flash.events.IOErrorEvent;
-	import flash.system.LoaderContext;
+	import flash.events.ProgressEvent;
+	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	import flash.external.ExternalInterface;
+	import flash.net.URLRequest;
+	import flash.system.LoaderContext;
 	
-	import lg.flash.elements.VisualElement;
 	import lg.flash.events.ElementEvent;
 	
 	/**
@@ -180,19 +179,32 @@ package lg.flash.elements {
 			return bounds;
 		}
 		
-		public function clone(getBitmap:Boolean=false):Bitmap {
+		public function clone():Image {
 			if(!image) {
 				return null;
 			}
 			
-			if(getBitmap) {
-				var bdata:BitmapData	= image.bitmapData as BitmapData;
-				var bitmap:Bitmap		= new Bitmap(bdata, 'auto', true);
-				
-				return bitmap;
-			} else {
-				return null;
-			}
+			var bdata:BitmapData	= image.bitmapData as BitmapData;
+			var bitmap:Bitmap		= new Bitmap(bdata, 'auto', true);
+			var img:Image			= new Image({image:bitmap});	
+			
+			return img;
+		}
+		
+		/** Flip the element horizontally **/
+		public override function flipX():void {
+			var matrix:Matrix		= image.transform.matrix;
+			matrix.a				= -1;
+			matrix.tx				= image.width + image.x;
+			image.transform.matrix	= matrix;
+		}
+		
+		/** Flip the element vertically **/
+		public override function flipY():void {
+			var matrix:Matrix		= image.transform.matrix;
+			matrix.d				= -1;
+			matrix.ty				= image.height + image.y;
+			image.transform.matrix	= matrix;
 		}
 		
 		public function clean():void {

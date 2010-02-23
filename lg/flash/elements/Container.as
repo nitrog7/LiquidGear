@@ -219,7 +219,7 @@ package lg.flash.elements {
 			
 			data.layoutInvalidated	= true;
 			
-			if(stage) {
+			if(stage && scheduler) {
 				scheduler.requestLayout(this);
 			}
 		}

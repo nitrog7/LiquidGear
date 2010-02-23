@@ -28,14 +28,15 @@
 **/
 
 package lg.flash.elements {
-	import flash.display.MovieClip;
 	import flash.display.AVM1Movie;
 	import flash.display.Loader;
-	import flash.net.URLRequest;
+	import flash.display.MovieClip;
 	import flash.events.Event;
-	import flash.events.ProgressEvent;
 	import flash.events.IOErrorEvent;
+	import flash.events.ProgressEvent;
+	import flash.net.URLRequest;
 	import flash.system.ApplicationDomain;
+	import flash.system.LoaderContext;
 	
 	import lg.flash.events.ElementEvent;
 	
@@ -107,13 +108,17 @@ package lg.flash.elements {
 		/** @private **/
 		private function load(src:String):void {
 			this.src	= src;
-			var req:URLRequest	= new URLRequest(basePath+src);
+			var req:URLRequest		= new URLRequest(basePath+src);
+			
+			var lc:LoaderContext	= new LoaderContext();
+			lc.checkPolicyFile		= true;
+			
 			_ldr = new Loader();
 			_ldr.contentLoaderInfo.addEventListener(Event.INIT, onInit);
 			_ldr.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoaded);
 			_ldr.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS, onProgress);
 			_ldr.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, onError);
-			_ldr.load(req);
+			_ldr.load(req, lc);
 		}
 		
 		/** @private **/

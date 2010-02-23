@@ -1,9 +1,9 @@
 /**
-* Throbber Class by Giraldo Rosales.
+* Preloader Class by Giraldo Rosales.
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2009 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Design, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -36,7 +36,7 @@ package lg.flash.components {
 	//LG
 	import lg.flash.elements.VisualElement;
 	
-	public class Throbber extends VisualElement {
+	public class Preloader extends VisualElement {
 		public var throbber:VisualElement	= new VisualElement();
 		
 		private var _trailCount:Number		= 5;
@@ -45,7 +45,7 @@ package lg.flash.components {
 		private var _leafNodeItr:Number		= 1;
 		private var _updateTimer:Timer;
 		
-		public function Throbber(obj:Object) {
+		public function Preloader(obj:Object) {
 			super();
 			ghost();
 			
@@ -118,7 +118,10 @@ package lg.flash.components {
 			_updateTimer.stop();
 		}
 		
-		public function setPercent(decimal:Number):void {
+		public function setPercent(value:Number):void {
+		}
+		
+		public function setDetails(value:String):void {
 		}
 		
 		public override function kill():void {

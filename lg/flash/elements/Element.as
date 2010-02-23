@@ -29,21 +29,19 @@
 
 package lg.flash.elements {
 	//Flash Classes
-	import flash.display.Sprite;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.FocusEvent;
+	import flash.events.IOErrorEvent;
+	import flash.events.KeyboardEvent;
+	import flash.events.MouseEvent;
+	import flash.events.ProgressEvent;
+	import flash.events.TimerEvent;
 	import flash.geom.Point;
 	import flash.utils.Timer;
 	
-	import flash.events.Event;
-	import flash.events.FocusEvent;
-	import flash.events.MouseEvent;
-	import flash.events.KeyboardEvent;
-	import flash.events.TimerEvent;
-	import flash.events.IOErrorEvent;
-	import flash.events.ProgressEvent;
-	
-	//LG Classes
 	import lg.flash.events.ElementEvent;
 	import lg.flash.utils.LGDebug;
 	
@@ -208,6 +206,8 @@ package lg.flash.elements {
 		public var toggled:Boolean		= false;
 		/** Indicates whether element will bubble events. **/
 		public var bubble:Boolean		= false;
+		/** Indicates whether element will be automatically added to a page. **/
+		public var addToPage:Boolean	= true;
 		/** Debugger. Use console.on() to turn on the debugger, console.off() to turn it off.
 		* Once on, you can use trace commands to the <a href="http://demonsterdebugger.com/">De Monster Debugger</a> client with
 		* the commands, console.log(), console.warn(), and console.error(). **/
@@ -243,7 +243,7 @@ package lg.flash.elements {
 			addEventListener('mouseOver', onMouseOver, false, 0, true);
 			addEventListener('mouseUp', onMouseUp, false, 0, true);
 			addEventListener('removeFromStage', onUnload, false, 0, true);
-			addEventListener('enterFrame', onEnter, false, 0, true);
+			//addEventListener('enterFrame', onEnter, false, 0, true);
 			
 			data.isLoaded	= false;
 			
@@ -919,6 +919,14 @@ package lg.flash.elements {
 			mouseEnabled	= false;
 			mouseChildren	= true;
 			useHandCursor	= false;
+			stretch			= false;
+		}
+		
+		public function set stretch(value:Boolean):void {
+			data.stretch	= value;
+		}
+		public function get stretch():Boolean {
+			return data.stretch;
 		}
 		
 		/** Indicates whether the element has been setup. **/

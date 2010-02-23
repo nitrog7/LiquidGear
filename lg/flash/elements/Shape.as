@@ -115,16 +115,16 @@ package lg.flash.elements {
 			
 			switch(data.shape.toLowerCase()) {
 				case 'rect':
-					_shape.graphics.drawRect(0, 0, width, height);
+					_shape.graphics.drawRect(0, 0, data.width, data.height);
 					break;
 				case 'roundrect':
-					_shape.graphics.drawRoundRect(0, 0, width, height, data.radius, data.radius);
+					_shape.graphics.drawRoundRect(0, 0, data.width, data.height, data.radius, data.radius);
 					break;
 				case 'circle':
-					_shape.graphics.drawEllipse(0, 0, width, width);
+					_shape.graphics.drawEllipse(0, 0, data.width, data.width);
 					break;
 				case 'ellipse':
-					_shape.graphics.drawEllipse(0, 0, width, height);
+					_shape.graphics.drawEllipse(0, 0, data.width, data.height);
 					break;
 			}
 			

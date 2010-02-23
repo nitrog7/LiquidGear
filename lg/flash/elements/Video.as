@@ -29,6 +29,8 @@
 
 package lg.flash.elements {
 	//Flash Classes
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
 	import flash.events.AsyncErrorEvent;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -123,6 +125,8 @@ package lg.flash.elements {
 		/** @private **/
 		protected var _updateTimer:Timer;
 		
+		private var _screenshot:Bitmap;
+		
 		/** 
 		*	Constructs a new Video object
 		*	@param obj Object containing all properties to construct the Video class	
@@ -144,6 +148,7 @@ package lg.flash.elements {
 			data.backgroundAlpha	= 1;
 			data.backgroundColor	= 0x000000;
 			data.transparent		= false;
+			data.lastVol			= 1;
 			
 			//Set Attributes
 			setAttributes(obj);
@@ -153,6 +158,8 @@ package lg.flash.elements {
 			data.bytesTotal		= 0;
 			data.duration		= 0;
 			data.current		= -1;
+			data.startVideo		= false;
+			data.stopVideo		= false;
 			
 			//Client
             _client				= {};
@@ -197,22 +204,29 @@ package lg.flash.elements {
 		public function load(src:String, seconds:Number=0, quality:String='default', forceLoad:Boolean=false):void {
 			//Clean
 			//clean();
+			removeScreen();
 			
 			this.src		= src;
 			data.isFinished = false;
 			data.isLoaded	= false;
+			data.stopVideo	= false;
+			
+			trace('Video::load', autoPlay);
+			if(autoPlay) {
+				data.stopVideo	= false;
+			}
 			
 			initStream();
 			
-			if(buffer == 0) {
-				_videoTimer.stop();
-				onLoaded();
-			} else {
+			if(buffer > 0) {
 				_videoTimer.start();
+			} else {
+				data.isLoaded	= true;
 			}
 		}
 		
 		private function initStream():void {
+			trace('Video::initStream', id);
 			try {
 				//NetConnection
 				_connection	= new NetConnection();
@@ -226,6 +240,7 @@ package lg.flash.elements {
         }
         
 		private function playStream():void {
+			trace('Video::playStream', id, data.startVideo);
 			data.isInit				= false;
 			
 			//Netstream
@@ -235,7 +250,6 @@ package lg.flash.elements {
 			video.addEventListener(AsyncErrorEvent.ASYNC_ERROR, onErrorAsync, false, 0, true);
 			video.addEventListener(NetStatusEvent.NET_STATUS, onStatusVideo, false, 0, true);
 			video.addEventListener(IOErrorEvent.IO_ERROR,onErrorLoad,false,0,true);
-			play();
 			
 			if(videoClip == null){
 				videoClip			= new flash.media.Video();
@@ -247,6 +261,15 @@ package lg.flash.elements {
 			}
 			
 			videoClip.attachNetStream(video);
+			
+			if(autoPlay || data.startVideo) {
+				play();
+				//} else {
+				//	pause();
+			}
+			data.startVideo	= false;
+			
+			trigger('element_loaded');
         }
         
 		/** @private **/
@@ -279,21 +302,22 @@ package lg.flash.elements {
 		/** @private **/
 		private function onStatusVideo(e:NetStatusEvent):void {
 			switch(e.info.code) {
-                case "NetConnection.Connect.Success":
-                	trace('onStatusVideo::NetConnection.Connect.Success');
-					playStream();
+                case 'NetConnection.Connect.Success':
+					trace('NetConnection.Connect.Success', data.stopVideo);
+					if(!data.stopVideo) {
+						playStream();
+					}
 					break;
 				case 'NetStream.Play.Start':
-                	trace('onStatusVideo::NetStream.Play.Start');
-					//data.isLoaded	= true;
+					trace('NetStream.Play.Start', id);
+                	data.isLoaded	= true;
 					break;
 				case 'NetStream.Play.Stop':
-                	trace('onStatusVideo::NetStream.Play.Stop');
-					if(isPlaying) {
+                	if(isPlaying) {
 						onFinishVideo();
 					}
 					break;
-				case "NetStream.Play.StreamNotFound":
+				case 'NetStream.Play.StreamNotFound':
                     trace("Unable to locate video: " + src);
                     break;
                 case 'NetStream.Seek.InvalidTime':
@@ -331,16 +355,14 @@ package lg.flash.elements {
 		      	scaleY = scale;
 			}
 			
-			volume	= data.volume;
-				
-			if(!autoPlay) {
-				pause();
-				//} else {
-				//	play();
+			volume				= data.volume;
+			if(videoClip) {
+				videoClip.visible	= true;
 			}
 			
-			videoClip.visible	= true;
-			video.bufferTime	= buffer * info.duration;
+			if(video) {
+				video.bufferTime	= buffer * info.duration;
+			}
 			
 			if(duration < info.duration) {
 				data.duration	= info.duration.toFixed(2);
@@ -358,39 +380,46 @@ package lg.flash.elements {
 		
 		/** @private **/
 		private function onFinishVideo(e:ElementEvent=null):void {
-			trace('Video::onFinishVideo', data.isFinished);
 			if(data.isFinished) {
 				return;
 			}
 			
 			data.isFinished = true;
 			
+			removeScreen();
+			
 			if(loop) {
 				data.isFinished	= false;
 				rewind();
+				play();
+				return;
 			}
-			else if(autoClean) {
-			//if(autoClean) {
+			
+			var lastScreen:BitmapData	= new BitmapData(width, height, true, 0x000000);
+			lastScreen.draw(this);
+			_screenshot					= new Bitmap(lastScreen, 'auto', true);
+			addChild(_screenshot);
+			
+			
+			if(autoClean) {
 				clean();
 			} else {
 				trigger('element_finish');
-				onStopVideo();
-				pause();
+				stop();
+				//pause();
 			}
 		}
 		
-		/** @private **/
-		private function onStopVideo():void {
-			if(data) {
-				data.isPlaying	= false;
+		private function removeScreen():void {
+			if(_screenshot && contains(_screenshot)) {
+				removeChild(_screenshot);
 			}
 			
-			trigger('element_stop');
+			_screenshot	= null;
 		}
 		
 		/** @private **/
 		private function onWaitVideo(e:TimerEvent):void {
-			trace('Video::onWaitVideo');
 			if(video.bytesTotal > 0 && (video.bytesLoaded/video.bytesTotal) >= buffer && !data.isLoaded) {
 				onLoaded();
 			}
@@ -435,42 +464,54 @@ package lg.flash.elements {
 		public function get current():Number {
 			return data.current;
 		}
+		
 		/** Play the video stream **/
 		public function play():void {
-			trace('Video::play');
-			if(video) {
-				if(!data.isLoaded) {
-					video.play(src);
+			trace('Video::play', id, data.isLoaded, data.isPlaying);
+			//if(video) {
+				if(data.isLoaded && !data.isPlaying) {
+					data.isPlaying	= true;
+					trace('video load');
 					//data.isLoaded	= true;
-				} else {
+					//video.play(src);
+					data.startVideo	= true;
+					data.stopVideo	= false;
+					load(src);
+				} else if(data.isPaused) {
+					trace('video resume');
 					video.resume();
+				} else {
+					trace('video play');
+					video.play(src);
 				}
 				
-				data.isPlaying	= true;
 				data.isPaused	= false;
 				data.isFinished	= false;
 				cacheAsBitmap	= false;
 				
 				//_updateTimer.start();
 				trigger('element_play');
-			}
+			//}
 		}
 		
 		/** Stop the video, remove from stage, and clean from memory. **/
 		public function stop():void {
-			trace('Video::stop');
-			if(video && isPlaying) {
-				video.pause();
-				seek(0);
-				onStopVideo();
+			trace('Video::onStopVideo', id, data);
+			if(data) {
+				data.isPlaying	= false;
+				data.stopVideo	= true;
 			}
+			trace('Video::data.autoClean', autoClean);
+			if(autoClean) {
+				clean(false);
+			}
+			trigger('element_stop');
 		}
 		
 		/** Pause the video. **/
 		public function pause():void {
-			trace('Video::pause');
 			if(video) {
-				data.isPlaying	= false;
+				//data.isPlaying	= false;
 				data.isPaused	= true;
 				
 				video.pause();
@@ -481,7 +522,6 @@ package lg.flash.elements {
 		
 		/** Rewind the video to the beginning. **/
 		public function rewind():void {
-			trace('Video::rewind');
 			seek(0);
 		}
 		
@@ -489,13 +529,15 @@ package lg.flash.elements {
 		*	@param seconds A number, in seconds, indicating the position of the playhead to jump to.
 		**/
 		public function seek(seconds:Number):void {
-			trace('Video::seek');
 			if(video) {
 				data.current	= seconds;
 				
 				video.pause();
 				video.seek(seconds);
-				video.resume();
+				
+				if(loop) {
+					video.resume();
+				}
 			}
 			
 			trigger('element_update');
@@ -545,7 +587,7 @@ package lg.flash.elements {
 			if(!isSetup) {
 				return;
 			}
-			trace('Video::resetSize', width, height);
+			
 			if(isNaN(width) || isNaN(height)) {
 				return;
 			}
@@ -652,7 +694,7 @@ package lg.flash.elements {
 		}
 		
 		/** @private **/
-		public function clean():void {
+		public function clean(reset:Boolean=true):void {
 			//Stop Timers
 			if(_videoTimer) {
 				_videoTimer.stop();
@@ -688,12 +730,13 @@ package lg.flash.elements {
 				videoClip	= null;
 			}
 			
-			isSetup		= false;
+			if(reset) {
+				isSetup		= false;
+			}
 		}
 		
 		/** Kill the object and clean from memory. **/
 		public override function kill():void {
-			trace('Video::kill');
 			clean();
 			
 			//unbind('element_video_meta', onMetaVideo);

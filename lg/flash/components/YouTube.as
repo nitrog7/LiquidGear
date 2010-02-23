@@ -500,7 +500,7 @@ package lg.flash.components {
 			return player.isMuted();
 		}
 		
-		public override function clean():void {
+		public override function clean(reset:Boolean=true):void {
 			if(player) {
 				player.destroy();
 				
