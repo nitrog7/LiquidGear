@@ -218,7 +218,11 @@ package lg.flash.elements {
 		/** @private **/
 		private var toggleFunctions:Vector.<Function>	= new Vector.<Function>(2, true);
 		/** @private **/
+<<<<<<< HEAD
 		private var _listners:Object	= {};
+=======
+		private var _listeners:Vector.<Object>			= new Vector.<Object>();
+>>>>>>> a29e2ca... Switched tween library to GTween
 		/** @private **/
 		private var _lmLoaded:Vector.<String>			= new Vector.<String>();
 		/** @private **/
@@ -315,6 +319,7 @@ package lg.flash.elements {
 				for(var s:String in params) {
 					this[s] = params[s];
 				}
+				
 				return this;
 			} else {
 				return null;
@@ -396,8 +401,9 @@ package lg.flash.elements {
 		public override function removeChild(element:DisplayObject):DisplayObject {
 			if(element) {
 				var elName:String	= element.name;
+				var childLen:int	= children.length;
 				
-				for(var g:int=0; g<children.length; g++) {
+				for(var g:int=0; g<childLen; g++) {
 					if(children[g] == elements[elName]) {
 						children.splice(g, 1);
 						break;
@@ -981,7 +987,9 @@ package lg.flash.elements {
 			}
 			
 			//Remove Children
-			for(var h:int=children.length; h>0; h--) {
+			var childLen:int	= children.length;
+			
+			for(var h:int=childLen; h>0; h--) {
 				removeChild(elements[h-1]);
 			}
 			

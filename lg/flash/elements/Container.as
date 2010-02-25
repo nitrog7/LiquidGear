@@ -348,14 +348,17 @@ package lg.flash.elements {
 		 */
 		protected function layoutChildren(rect:Rectangle, auto:AutoSize, size:Size):Size {
 			//Default behavior of Container: pass on our width/height/auto sizes, size ourself to content
+			var child:DisplayObject;
+			var childSize:Size;
+			
 			for(var g:int=0; g<numChildren; g++) {
-				var child:DisplayObject	= getChildAt(g);
+				child		= getChildAt(g);
 				
 				if(!child) {
 					continue;
 				}
 				
-				var childSize:Size		= layoutChild(child, rect, auto);
+				childSize	= layoutChild(child, rect, auto);
 				size.growToFit(childSize);
 			}
 			

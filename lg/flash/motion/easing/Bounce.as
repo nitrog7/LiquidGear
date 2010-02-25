@@ -1,22 +1,1 @@
-package lg.flash.motion.easing {
-	public class Bounce {
-		public static function easeOut (t:Number, b:Number, c:Number, d:Number):Number {
-			if ((t/=d) < (1/2.75)) {
-				return c*(7.5625*t*t) + b;
-			} else if (t < (2/2.75)) {
-				return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
-			} else if (t < (2.5/2.75)) {
-				return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
-			} else {
-				return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
-			}
-		}
-		public static function easeIn (t:Number, b:Number, c:Number, d:Number):Number {
-			return c - easeOut(d-t, 0, c, d) + b;
-		}
-		public static function easeInOut (t:Number, b:Number, c:Number, d:Number):Number {
-			if (t < d*0.5) return easeIn (t*2, 0, c, d) * .5 + b;
-			else return easeOut (t*2-d, 0, c, d) * .5 + c*.5 + b;
-		}
-	}
-}
+﻿/*** Bounce by Grant Skinner. Nov 3, 2009* Visit www.gskinner.com/blog for documentation, updates and more free code.** Adapted from Robert Penner's AS3 tweening equations.*** Copyright (c) 2009 Grant Skinner* * Permission is hereby granted, free of charge, to any person* obtaining a copy of this software and associated documentation* files (the "Software"), to deal in the Software without* restriction, including without limitation the rights to use,* copy, modify, merge, publish, distribute, sublicense, and/or sell* copies of the Software, and to permit persons to whom the* Software is furnished to do so, subject to the following* conditions:* * The above copyright notice and this permission notice shall be* included in all copies or substantial portions of the Software.* * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR* OTHER DEALINGS IN THE SOFTWARE.**/package lg.flash.motion.easing {		/**	* Easing class for use with GTween. This ease class is not compatible with other tweening engines.	* GTween can use standard t,b,c,d format ease classes.	**/	public class Bounce {				// unused params are included for compatibility with other easing classes.		public static function easeIn(ratio:Number, unused1:Number, unused2:Number, unused3:Number):Number {			return 1-easeOut(1-ratio,0,0,0);		}				public static function easeOut(ratio:Number, unused1:Number, unused2:Number, unused3:Number):Number {			if (ratio < 1/2.75) {				return 7.5625*ratio*ratio;			} else if (ratio < 2/2.75) {				return 7.5625*(ratio-=1.5/2.75)*ratio+0.75;			} else if (ratio < 2.5/2.75) {				return 7.5625*(ratio-=2.25/2.75)*ratio+0.9375;			} else {				return 7.5625*(ratio-=2.625/2.75)*ratio+0.984375;			}		}				public static function easeInOut(ratio:Number, unused1:Number, unused2:Number, unused3:Number):Number {			return ((ratio*=2) < 1) ? 0.5*easeIn(ratio,0,0,0) : 0.5*easeOut(ratio-1,0,0,0)+0.5;		}	}}

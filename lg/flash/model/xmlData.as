@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2010 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -283,45 +283,43 @@
 			var children:XMLList	= xmlObj.value;
 			var childLen:int		= children.length();
 			
-			if(childLen > 0) {
-				for(var g:int=0; g<childLen; g++) {
-					var child:XML			= children[g] as XML;
+			for(var g:int=0; g<childLen; g++) {
+				var child:XML			= children[g] as XML;
+				
+				if(!child) {
+					continue;
+				}
+				
+				if(child.nodeKind() == 'text') {
+					obj	= child.toString();
 					
-					if(!child) {
-						continue;
+					if(obj == 'true') {
+						obj	= true;
+					}
+					else if(obj == 'false') {
+						obj	= false;
+					}
+					else if(!isNaN(Number(obj))) {
+						obj	= Number(obj);
 					}
 					
-					if(child.nodeKind() == 'text') {
-						obj	= child.toString();
-						
-						if(obj == 'true') {
-							obj	= true;
-						}
-						else if(obj == 'false') {
-							obj	= false;
-						}
-						else if(!isNaN(Number(obj))) {
-							obj	= Number(obj);
-						}
-						
-						return obj;
+					return obj;
+				}
+				
+				if(xmlObj.type == 'array') {
+					if(!(obj is Array)) {
+						obj	= [];
 					}
 					
-					if(xmlObj.type == 'array') {
-						if(!(obj is Array)) {
-							obj	= [];
-						}
-						
-						obj[g]	= toObject(XML(child));
-					} else {
-						var childObj:Object	= parseNode(child, xmlObj.type);
-						
-						if(!obj) {
-							obj	= {};
-						}
-						
-						obj[childObj.id]	= toObject(XML(child));
+					obj[g]	= toObject(XML(child));
+				} else {
+					var childObj:Object	= parseNode(child, xmlObj.type);
+					
+					if(!obj) {
+						obj	= {};
 					}
+					
+					obj[childObj.id]	= toObject(XML(child));
 				}
 			}
 			

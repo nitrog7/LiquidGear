@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2009 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -30,19 +30,20 @@
  package lg.flash.model {
 	//Flash Classes
 	import flash.events.EventDispatcher;
-	import flash.utils.Dictionary;
 	import flash.system.System;
+	import flash.utils.Dictionary;
 	
-	//LG Classes
 	import lg.flash.events.ModelEvent;
 	
 	public class LGData extends EventDispatcher {
 		/** Allows you to associate arbitrary data with the model. **/
 		public var data:Object			= {};
+		/** Indicates whether element will bubble events. **/
+		public var bubble:Boolean		= false;
 		/** @private **/
 		protected var _data:Dictionary	= new Dictionary(true);
 		/** @private **/
-		protected var _listners:Object	= {};
+		protected var _listeners:Vector.<Object>	= new Vector.<Object>();
 		
 		/** Load data from an XML file. **/
 		public function LGData() {
@@ -68,21 +69,8 @@
 		*
 		*	@param type The type of event to bind. 
 		*	@param fn The function to call once the event is triggered. **/
-		public function bind(type:String, fn:Function):LGData {
-			var listenArray:Array = _listners[type];
-			if(listenArray == null) {
-				listenArray	= [];
-			}
-			
-			var lisLen:int		= listenArray.length;
-			listenArray[lisLen]	= fn;
-			_listners[type]	= listenArray;
-			addEventListener(type, fn, false, 0, true);
-			
-			//Cleanup
-			listenArray	= null;
-			type		= null;
-			fn			= null;
+		public function bind(type:String, fn:Function, capture:Boolean=false):LGData {
+			addEventListener(type, fn, capture);
 			return this;
 		}
 		
@@ -93,15 +81,23 @@
 		*	@param type Type of event to remove.
 		*	@param fn The function in the listener event to remove.**/
 		public function unbind(type:String, fn:Function=null):LGData {
+			//var listenArray:Array	= _listeners[type];
+			var lisLen:int	= _listeners.length;
+			
+			if(!lisLen) {
+				return this;
+			}
+			
 			if(fn != null) {
 				//remove a specific listener
 				removeEventListener(type, fn);
 			} else {
 				//else remove all listeners for that type
-				var listenArray:Array	= _listners[type];
-				var lisLen:int			= listenArray.length;
+				var lisObj:Object;
+				
 				for(var g:int=0; g<lisLen; g++) {
-					removeEventListener(type, listenArray[g]);
+					lisObj	= _listeners[g];
+					removeEventListener(lisObj.type, lisObj.fn);
 				}
 			}
 			
@@ -119,13 +115,16 @@
 		*	@param event Event data. **/
 		public function trigger(type:String, args:Object=null, event:Object=null):LGData {
 			var e:ModelEvent	= new ModelEvent(type);
-			e.params			= data;
-			e.data				= args;
-			e.event				= event;
+			e.params	= data;
+			e.data		= args;
+			e.event		= event;
 			
-			if(e.eventPhase == 2) {
+			if(bubble || e.eventPhase == 2) {
 				dispatchEvent(e);
 			}
+			
+			//Clean
+			e	= null;
 			
 			return this;
 		}
@@ -149,6 +148,66 @@
 		*	@param fn Function to call when triggered.**/
 		public function loaded(fn:Function):void {
 			bind('data_loaded', fn);
+		}
+		
+		
+		public override function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void {
+			//Add listener
+			super.addEventListener(type, listener, false, 0, true);
+			
+			if(useCapture) {
+				return;
+			}
+			
+			//Add listener to event manager
+			var lisLen:int		= _listeners.length;
+			_listeners[lisLen]	= {type:type, fn:listener};
+		}
+		
+		public override function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void {
+			//Remove listener
+			super.removeEventListener(type, listener, useCapture);
+			
+			//Remove listener from manager
+			var lisLen:int	= _listeners.length;
+			
+			if(!lisLen) {
+				return;
+			}
+			
+			var lisIdx:int	= -1;
+			var lisObj:Object;
+			
+			for(var g:int=0; g<lisLen; g++) {
+				lisObj	= _listeners[g];
+				
+				if(lisObj.type == type) {
+					if(lisObj.fn == listener) {
+						lisIdx	= g;
+					}
+				}
+			}
+			
+			
+			if(lisIdx >=0) {
+				_listeners.splice(lisIdx, 1);
+			}
+		}
+		
+		/** Clear all events from an element **/
+		public function clearEvents():void {
+			var lisLen:int	= _listeners.length;
+			var lisObj:Object;
+			
+			for(var g:int; g<lisLen; g++) {
+				lisObj	= _listeners[g];
+				
+				if(hasEventListener(lisObj.type)) {
+					removeEventListener(lisObj.type, lisObj.fn);
+				}
+			}
+			
+			_listeners	= new Vector.<Object>();
 		}
 		
 		/** Kill the object and clean from memory. **/

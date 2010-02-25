@@ -45,7 +45,7 @@ package lg.flash.elements {
 	
 	import lg.flash.events.ElementEvent;
 	import lg.flash.motion.Tween;
-	import lg.flash.motion.easing.Quint;
+	import lg.flash.motion.easing.Quintic;
 	
 	/**
 	* Dispatched when a video begins to play.
@@ -672,7 +672,7 @@ package lg.flash.elements {
 			obj.autoAlpha	= 0;
 			obj.duration	= duration;
 			obj.delay		= delay;
-			obj.ease		= Quint.easeInOut;
+			obj.ease		= Quintic.easeInOut;
 			obj.overwrite	= 2;
 			
 			if(callback != null) {
