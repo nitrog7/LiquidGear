@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2009 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -218,11 +218,7 @@ package lg.flash.elements {
 		/** @private **/
 		private var toggleFunctions:Vector.<Function>	= new Vector.<Function>(2, true);
 		/** @private **/
-<<<<<<< HEAD
-		private var _listners:Object	= {};
-=======
 		private var _listeners:Vector.<Object>			= new Vector.<Object>();
->>>>>>> a29e2ca... Switched tween library to GTween
 		/** @private **/
 		private var _lmLoaded:Vector.<String>			= new Vector.<String>();
 		/** @private **/
@@ -230,26 +226,11 @@ package lg.flash.elements {
 		
 		/** Constructs a new Element object	**/
 		public function Element() {
-			//Change event listeners
-			addEventListener('init', onInit, false, 0, true);
-			addEventListener('complete', onComplete, false, 0, true);
-			addEventListener('focusOut', onBlur, false, 0, true);
-			addEventListener('change', onChange, false, 0, true);
-			addEventListener('click', onClick, false, 0, true);
-			addEventListener('doubleClick', onDoubleClick, false, 0, true);
-			addEventListener('focusIn', onFocus, false, 0, true);
-			addEventListener('keyDown', onKeyDown, false, 0, true);
-			addEventListener('keyUp', onKeyUp, false, 0, true);
-			addEventListener('addedToStage', onAdd, false, 0, true);
-			addEventListener('mouseDown', onMouseDown, false, 0, true);
-			addEventListener('mouseMove', onMouseMove, false, 0, true);
-			addEventListener('mouseOut', onMouseOut, false, 0, true);
-			addEventListener('mouseOver', onMouseOver, false, 0, true);
-			addEventListener('mouseUp', onMouseUp, false, 0, true);
-			addEventListener('removeFromStage', onUnload, false, 0, true);
-			//addEventListener('enterFrame', onEnter, false, 0, true);
+			mouseEnabled	= false;
+			mouseChildren	= false;
 			
 			data.isLoaded	= false;
+			data.stretch	= true;
 			
 			//Debugger
 			console	= new LGDebug(this);
@@ -429,35 +410,10 @@ package lg.flash.elements {
 		*
 		*	@param type The type of event to bind. 
 		*	@param fn The function to call once the event is triggered. **/
-		public function bind(type:String, fn:Function):Element {
-			var listenArray:Array = _listners[type];
-			if(listenArray == null) {
-				listenArray	= [];
-			}
-			
-			if(type == 'element_dblclick') {
-				doubleClickEnabled	= true;
-			}
-			
-			var lisLen:int		= listenArray.length;
-			listenArray[lisLen]	= fn;
-			_listners[type]	= listenArray;
-			addEventListener(type, fn, false, 0, true);
-			
-			//Cleanup
-			listenArray	= null;
-			type		= null;
-			fn			= null;
+		public function bind(type:String, fn:Function, capture:Boolean=false):Element {
+			addEventListener(type, fn, capture);
 			return this;
 		}
-		
-		//public function one(type:String, fn:Function):Element {
-		//	var event:ElementEvent	= new ElementEvent(type);
-		//	event.params	= data;
-		//	event.one		= true;
-		//	
-		//	return this;
-		//}
 		
 		/** Shortcut to dispatch an event. If any variables are to be sent with 
 		*	the event, you can pass them within an Object in the second parameter.
@@ -478,6 +434,9 @@ package lg.flash.elements {
 				dispatchEvent(e);
 			}
 			
+			//Clean
+			e	= null;
+			
 			return this;
 		}
 		
@@ -486,6 +445,7 @@ package lg.flash.elements {
 			if (bubble || (hasEventListener(e.type) || e.bubbles)) {
 				return super.dispatchEvent(e);
 			}
+			
 			return true;
 		}
 		
@@ -496,27 +456,23 @@ package lg.flash.elements {
 		*	@param type Type of event to remove.
 		*	@param fn The function in the listener event to remove.**/
 		public function unbind(type:String, fn:Function=null):Element {
+			//var listenArray:Array	= _listeners[type];
+			var lisLen:int	= _listeners.length;
+			
+			if(!lisLen) {
+				return this;
+			}
+			
 			if(fn != null) {
 				//remove a specific listener
 				removeEventListener(type, fn);
 			} else {
 				//else remove all listeners for that type
-				var listenArray:Array	= _listners[type];
-				var lisLen:int			= listenArray.length;
+				var lisObj:Object;
+				
 				for(var g:int=0; g<lisLen; g++) {
-					removeEventListener(type, listenArray[g]);
-				}
-			}
-			
-			if(doubleClickEnabled && type == 'element_dblclick') {
-				var dbl:Boolean	= false;
-				for(var s:String in _listners) {
-					if(s == 'element_dblclick') {
-						dbl	= true;
-					}
-				}
-				if(!dbl) {
-					doubleClickEnabled	= false;
+					lisObj	= _listeners[g];
+					removeEventListener(lisObj.type, lisObj.fn);
 				}
 			}
 			
@@ -865,7 +821,7 @@ package lg.flash.elements {
 		}
 		/** @private **/
 		private function onFocus(e:FocusEvent):void {
-			trigger('element_', null, e);
+			trigger('element_focus', null, e);
 		}
 		/** @private **/
 		private function onEnter(e:Event):void {
@@ -881,7 +837,6 @@ package lg.flash.elements {
 		}
 		/** @private **/
 		private function onAdd(e:Event):void {
-			update();
 			trigger('element_add', null, e);
 		}
 		/** @private **/
@@ -955,36 +910,188 @@ package lg.flash.elements {
 		public function update(obj:Object=null):void {
 		}
 		
-		/** Kill the object and clean from memory. **/
-		public function kill():void {
-			//Remove listeners
-			removeEventListener('init', onInit);
-			removeEventListener('complete', onComplete);
-			removeEventListener('focusOut', onBlur);
-			removeEventListener('change', onChange);
-			removeEventListener('click', onClick);
-			removeEventListener('doubleClick', onDoubleClick);
-			removeEventListener('focusIn', onFocus);
-			removeEventListener('keyDown', onKeyDown);
-			removeEventListener('keyUp', onKeyUp);
-			removeEventListener('addedToStage', onAdd);
-			removeEventListener('mouseDown', onMouseDown);
-			removeEventListener('mouseMove', onMouseMove);
-			removeEventListener('mouseOut', onMouseOut);
-			removeEventListener('mouseOver', onMouseOver);
-			removeEventListener('mouseUp', onMouseUp);
-			removeEventListener('removeFromStage', onUnload);
-			removeEventListener('enterFrame', onEnter);
+		public override function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void {
+			//Add listener
+			super.addEventListener(type, listener, false, 0, true);
 			
-			//Remove Listeners
-			for(var s:String in _listners) {
-				var listenArray:Array	= _listners[s];
-				var lisLen:int			= listenArray.length;
+			if(useCapture) {
+				return;
+			}
+			
+			//Add listener to event manager
+			var lisLen:int		= _listeners.length;
+			_listeners[lisLen]	= {type:type, fn:listener};
+			
+			//Add alias if exists
+			switch(type) {
+				case 'element_init':
+					super.addEventListener('init', onInit, false, 0, true);
+					break;
+				case 'element_complete':
+					super.addEventListener('complete', onComplete, false, 0, true);
+					break;
+				case 'element_enter':
+					super.addEventListener('enterFrame', onEnter, false, 0, true);
+					break;
+				case 'element_focus':
+					super.addEventListener('focusIn', onFocus, false, 0, true);
+					break;
+				case 'element_unfocus':
+					super.addEventListener('focusOut', onBlur, false, 0, true);
+					break;
+				case 'element_change':
+					super.addEventListener('change', onChange, false, 0, true);
+					break;
+				case 'element_keydown':
+					super.addEventListener('keyDown', onKeyDown, false, 0, true);
+					break;
+				case 'element_keyup':
+					super.addEventListener('keyUp', onKeyUp, false, 0, true);
+					break;
+				case 'element_add':
+					super.addEventListener('addedToStage', onAdd, false, 0, true);
+					break;
+				case 'element_unload':
+					super.addEventListener('removeFromStage', onUnload, false, 0, true);
+					break;
+				case 'element_click':
+					super.addEventListener('click', onClick, false, 0, true);
+					break;
+				case 'element_mouseover':
+					super.addEventListener('mouseOver', onMouseOver, false, 0, true);
+					break;
+				case 'element_mousedown':
+					super.addEventListener('mouseDown', onMouseDown, false, 0, true);
+					break;
+				case 'element_mousemove':
+					super.addEventListener('mouseMove', onMouseMove, false, 0, true);
+					break;
+				case 'element_mouseout':
+					super.addEventListener('mouseOut', onMouseOut, false, 0, true);
+					break;
+				case 'element_mouseup':
+					super.addEventListener('mouseUp', onMouseUp, false, 0, true);
+					break;
+				case 'element_dblclick':
+					super.addEventListener('doubleClick', onDoubleClick, false, 0, true);
+					doubleClickEnabled	= true;
+					break;
+			}
+		}
+		public override function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void {
+			//Remove listener
+			super.removeEventListener(type, listener, useCapture);
+			
+			//Remove listener from manager
+			var lisLen:int	= _listeners.length;
+			
+			if(!lisLen) {
+				return;
+			}
+			
+			var lisCnt:int	= 0;
+			var lisIdx:int	= -1;
+			var lisObj:Object;
+			
+			for(var g:int=0; g<lisLen; g++) {
+				lisObj	= _listeners[g];
 				
-				for(var g:int=0; g<lisLen; g++) {
-					removeEventListener(s, listenArray[g]);
+				if(lisObj.type == type) {
+					lisCnt++;
+					
+					if(lisObj.fn == listener) {
+						lisIdx	= g;
+					}
 				}
 			}
+			
+			
+			if(lisIdx >=0) {
+				_listeners.splice(lisIdx, 1);
+			}
+			
+			//Only remove alias if all references to the event are removed
+			if(lisCnt > 1) {
+				return;
+			}
+			
+			//Remove alias
+			switch(type) {
+				case 'element_init':
+					super.removeEventListener('init', onInit);
+					break;
+				case 'element_complete':
+					super.removeEventListener('complete', onComplete);
+					break;
+				case 'element_enter':
+					super.removeEventListener('enterFrame', onEnter);
+					break;
+				case 'element_focus':
+					super.removeEventListener('focusIn', onFocus);
+					break;
+				case 'element_unfocus':
+					removeEventListener('focusOut', onBlur);
+					break;
+				case 'element_change':
+					super.removeEventListener('change', onChange);
+					break;
+				case 'element_keydown':
+					super.removeEventListener('keyDown', onKeyDown);
+					break;
+				case 'element_keyup':
+					super.removeEventListener('keyUp', onKeyUp);
+					break;
+				case 'element_add':
+					super.removeEventListener('addedToStage', onAdd);
+					break;
+				case 'element_unload':
+					super.removeEventListener('removeFromStage', onUnload);
+					break;
+				case 'element_click':
+					super.removeEventListener('click', onClick);
+					break;
+				case 'element_mouseover':
+					super.removeEventListener('mouseOver', onMouseOver);
+					break;
+				case 'element_mousedown':
+					super.removeEventListener('mouseDown', onMouseDown);
+					break;
+				case 'element_mousemove':
+					super.removeEventListener('mouseMove', onMouseMove);
+					break;
+				case 'element_mouseout':
+					super.removeEventListener('mouseOut', onMouseOut);
+					break;
+				case 'element_mouseup':
+					removeEventListener('mouseUp', onMouseUp);
+					break;
+				case 'element_dblclick':
+					super.removeEventListener('doubleClick', onDoubleClick);
+					doubleClickEnabled	= false;
+					break;
+			}
+		}
+		
+		/** Clear all events from an element **/
+		public function clearEvents():void {
+			var lisLen:int	= _listeners.length;
+			var lisObj:Object;
+			
+			for(var g:int; g<lisLen; g++) {
+				lisObj	= _listeners[g];
+				
+				if(hasEventListener(lisObj.type)) {
+					removeEventListener(lisObj.type, lisObj.fn);
+				}
+			}
+			
+			_listeners	= new Vector.<Object>();
+		}
+		
+		/** Kill the object and clean from memory. **/
+		public function kill():void {
+			//Remove Listeners
+			clearEvents();
 			
 			//Remove Children
 			var childLen:int	= children.length;
@@ -1001,7 +1108,7 @@ package lg.flash.elements {
 			//className	= null;
 			basePath	= null;
 			data		= null;
-			_listners	= null;
+			_listeners	= null;
 			//contentEditable	= null;
 		}
 	}

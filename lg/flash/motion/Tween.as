@@ -57,6 +57,15 @@ package lg.flash.motion {
 			data.onCompleteParams	= null;
 			data.onInitParams		= null;
 			
+			//Set target
+			if('target' in obj) {
+				element	= obj.target as VisualElement;
+			}
+			
+			if(!element) {
+				return;
+			}
+			
 			var propName:Array	= [
 				'autoPlay',
 				'calculatedPosition',
@@ -206,7 +215,7 @@ package lg.flash.motion {
 					piSnapEnable++;
 				}
 				else if(propName.indexOf(s) < 0) {
-					if(hasOwnProperty(s)) {
+					if(element.hasOwnProperty(s)) {
 						tweenObj[s] 		= obj[s];
 					}
 				}
@@ -280,14 +289,8 @@ package lg.flash.motion {
 				SoundTransformPlugin.install();
 			}
 			
-			//Set target
-			if('target' in data) {
-				element	= data.target as VisualElement;
-			}
-			
 			//TweenPlugin.activate([FramePlugin, BevelFilterPlugin, BlurFilterPlugin, RemoveTintPlugin, TintPlugin, DropShadowFilterPlugin, VisiblePlugin, ColorMatrixFilterPlugin, VolumePlugin, HexColorsPlugin, GlowFilterPlugin, AutoAlphaPlugin, EndArrayPlugin]);
-			
-			_tween	= new GTween(data.target, data.duration, tweenObj, propObj);
+			_tween	= new GTween(element, data.duration, tweenObj, propObj);
 			//_tween.addEventListener(TweenEvent.START, onInit);
 			//_tween.addEventListener(TweenEvent.UPDATE, onChange);
 			//_tween.addEventListener(TweenEvent.COMPLETE, onComplete);
