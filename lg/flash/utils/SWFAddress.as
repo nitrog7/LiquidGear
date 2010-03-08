@@ -4,9 +4,6 @@
  * SWFAddress is (c) 2006-2009 Rostislav Hristov and contributors
  * This software is released under the MIT License <http://www.opensource.org/licenses/mit-license.php>
  *
- */
-
-/**
  * @author Rostislav Hristov <http://www.asual.com>
  * @author Mark Ross <http://www.therossman.org>
  * @author Piotr Zema <http://felixz.marknaegeli.com>
