@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2009 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -28,325 +28,182 @@
 **/
 
 package lg.flash.motion {
-	//Flash Classes
+	//Flash
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
 	import lg.flash.elements.Element;
 	import lg.flash.elements.VisualElement;
 	import lg.flash.events.ElementDispatcher;
 	import lg.flash.events.ElementEvent;
-	import lg.flash.motion.GTween;
-	import lg.flash.motion.plugins.*;
+	import lg.flash.motion.Tweener;
+	import lg.flash.motion.tweens.ITween;
+	import lg.flash.motion.tweens.ITweenGroup;
 	
 	/**
-	*	<p>Extends GTween functionality to provide additional features.</p>
+	*	<p>Extends BetweenAS3 functionality.</p>
 	*/
 	public class Tween extends ElementDispatcher {
-		public var element:VisualElement;
+		public var tween:ITween;
+		public var serial:ITweenGroup;
 		
-		/** @private **/
-		private var _tween:GTween;
 		/** 
 		*	Constructs a new Tween object
-		*	@param obj Object containing all properties to construct the Shape class.
+		*	@param obj Object containing all properties to construct the class.
 		**/
 		public function Tween(obj:Object=null) {
-			//Set defaults
-			data.duration			= 0;
-			data.onChangeParams		= null;
-			data.onCompleteParams	= null;
-			data.onInitParams		= null;
+			super();
 			
 			//Set target
-			if('target' in obj) {
-				element	= obj.target as VisualElement;
-			}
-			
-			if(!element) {
+			if(!('target' in obj)) {
 				return;
 			}
 			
-			var propName:Array	= [
-				'autoPlay',
-				'calculatedPosition',
-				'calculatedPositionOld',
-				'data',
-				'defaultDispatchEvents',
-				'defaultEase',
-				'delay',
-				'dispatchEvents',
-				'duration', 
-				'ease',
-				'nextTween',
-				'pauseAll',
-				'paused',
-				'pluginData',
-				'position',
-				'positionOld',
-				'proxy',
-				'ratio',
-				'ratioOld',
-				'reflect',
-				'repeatCount',
-				'suppressEvents',
-				'target',
-				'timeScale',
-				'timeScaleAll',
-				'useFrames',
-				'version'
-			];
+			var element:Object		= obj.target;
 			
-			//AutoHidePlugin properties
-			var piAlphaEnable:int		= 0;
+			//Set defaults
+			data.duration			= 0;
+			data.delay				= 0;
+			data.autoPlay			= true;
+			data.ease				= null;
+			data.visible			= null;
+			data.onChange			= null;
+			data.onChangeParams		= null;
+			data.onPlay				= null;
+			data.onPlayParams		= null;
+			data.onStop				= null;
+			data.onStopParams		= null;
+			data.onUpdate			= null;
+			data.onUpdateParams		= null;
 			
-			//BlurPlugin properties
-			var piBlurEnable:int		= 0;
-			var piBlurProp:Array		= [
-				'blur',
-				'blurX',
-				'blurY'
-			];
+			//Only get properties that are in the element
+			var tweenObj:Object		= {};
+			var dspObj:DisplayObject;
 			
-			//ColorAdjustPlugin properties
-			var piColorAdjustEnable:int	= 0;
-			var piColorAdjustProp:Array	= [
-				'brightness',
-				'contrast',
-				'hue'
-			];
-			
-			//ColorTransformPlugin properties
-			var piColorTransEnable:int	= 0;
-			var piColorTransProp:Array	= [
-				'redMultiplier',
-				'greenMultiplier',
-				'blueMultiplier',
-				'alphaMultiplier',
-				'redOffset',
-				'greenOffset',
-				'blueOffset',
-				'alphaOffset',
-				'tint'
-			];
-			
-			//CurrentFramePlugin properties
-			var piCurFrameEnable:int	= 0;
-			var piCurFrameProp:Array	= ['currentFrame'];
-			
-			//MatrixPlugin properties
-			var piMatrixEnable:int		= 0;
-			var piMatrixProp:Array		= [
-				'a',
-				'b',
-				'c',
-				'd',
-				'tx',
-				'ty'
-			];
-			
-			//MotionBlurPlugin properties
-			var piMotionEnable:int		= 0;
-			
-			//SmartRotationPlugin properties
-			var piRotationEnable:int	= 0;
-			
-			//SnappingPlugin properties
-			var piSnapEnable:int		= 0;
-			
-			//SoundTransformPlugin properties
-			var piSoundEnable:int		= 0;
-			var piSoundProp:Array		= [
-				'volume',
-				'pan',
-				'leftToLeft',
-				'leftToRight',
-				'rightToLeft',
-				'rightToRight'
-			];
-			
-			var tweenObj:Object	= {};
-			var propObj:Object	= {};
-			var plugObj:Object	= {};
-			
-			//Set Attributes
 			for(var s:String in obj) {
-				if(propName.indexOf(s) >= 0) {
-					propObj[s] = obj[s];
-				}
-				else if(s == 'onChange') {
-					data.onChange	= obj[s];
-					
-					if(obj.onChangeParams != undefined) {
-						data.onChangeParams	= obj.onChangeParams;
+				if(element.hasOwnProperty(s)) {
+					if(s == 'alpha' && element is DisplayObject) {
+						dspObj	= element as DisplayObject;
+						
+						if(obj.alpha == 0 && dspObj.visible) {
+							data.visible	= false;
+						} else if(obj.alpha > 0 && !dspObj.visible) {
+							data.visible	= true;
+						}
 					}
 					
-					propObj.onChange	= onChange;
-				}
-				else if(s == 'onComplete') {
-					data.onComplete		= obj[s];
-					
-					if(obj.onCompleteParams != undefined) {
-						data.onCompleteParams	= obj.onCompleteParams;
-					}
-					
-					propObj.onComplete	= onComplete;
-				}
-				else if(s == 'onInit') {
-					data.onInit		= obj[s];
-					
-					if(obj.onInitParams != undefined) {
-						data.onInitParams	= obj.onInitParams;
-					}
-					
-					propObj.onInit	= onInit;
-				}
-				else if(s == 'autoAlpha') {
-					piAlphaEnable++;
-					tweenObj.alpha	= obj[s];
-				}
-				else if(s == 'motionBlur') {
-					piMotionEnable++;
-					plugObj.strength	= obj[s];
-				}
-				else if(obj[s] && s == 'smartRotation') {
-					piRotationEnable++;
-				}
-				else if(obj[s] && s == 'snap') {
-					piSnapEnable++;
-				}
-				else if(propName.indexOf(s) < 0) {
-					if(element.hasOwnProperty(s)) {
-						tweenObj[s] 		= obj[s];
+					if(!(s in data)) {
+						tweenObj[s]	= obj[s];
 					}
 				}
 				
-				if(piBlurProp.indexOf(s) >= 0) {
-					piBlurEnable++;
-				}
-				
-				if(piColorAdjustProp.indexOf(s) >= 0) {
-					piColorAdjustEnable++;
-				}
-				
-				if(piColorAdjustProp.indexOf(s) >= 0) {
-					piColorTransEnable++;
-				}
-				
-				if(piCurFrameProp.indexOf(s) >= 0) {
-					piCurFrameEnable++;
-				}
-				
-				if(piMatrixProp.indexOf(s) >= 0) {
-					piMatrixEnable++;
-				}
-				
-				if(piSoundProp.indexOf(s) >= 0) {
-					piSoundEnable++;
-				}
-				
-				data[s] = obj[s];
+				data[s]	= obj[s];
 			}
 			
+			var tween:ITween	= Tweener.to(element, tweenObj, data.duration, data.ease);
 			
-			//Enable AutoHidePlugin
-			if(piAlphaEnable) {
-				AutoHidePlugin.install();
-			}
-			//Enable BlurPlugin
-			if(piBlurEnable) {
-				BlurPlugin.install();
-			}
-			//Enable ColorAdjustPlugin
-			if(piColorAdjustEnable) {
-				ColorAdjustPlugin.install();
-			}
-			//Enable ColorAdjustPlugin
-			if(piColorTransEnable) {
-				ColorTransformPlugin.install();
-			}
-			//Enable ColorAdjustPlugin
-			if(piCurFrameProp) {
-				CurrentFramePlugin.install();
-			}
-			//Enable MatrixPlugin
-			if(piMatrixEnable) {
-				MatrixPlugin.install();
-			}
-			//Enable MotionBlurPlugin
-			if(piMotionEnable) {
-				MotionBlurPlugin.install();
-			}
-			//Enable SmartRotationPlugin
-			if(piRotationEnable) {
-				SmartRotationPlugin.install();
-			}
-			//Enable SnappingPlugin
-			if(piSoundEnable) {
-				SnappingPlugin.install();
-			}
-			//Enable SoundTransformPlugin
-			if(piSnapEnable) {
-				SoundTransformPlugin.install();
+			if(data.delay > 0) {
+				Tweener.delay(tween, data.delay);
 			}
 			
-			//TweenPlugin.activate([FramePlugin, BevelFilterPlugin, BlurFilterPlugin, RemoveTintPlugin, TintPlugin, DropShadowFilterPlugin, VisiblePlugin, ColorMatrixFilterPlugin, VolumePlugin, HexColorsPlugin, GlowFilterPlugin, AutoAlphaPlugin, EndArrayPlugin]);
-			_tween	= new GTween(element, data.duration, tweenObj, propObj);
-			//_tween.addEventListener(TweenEvent.START, onInit);
-			//_tween.addEventListener(TweenEvent.UPDATE, onChange);
-			//_tween.addEventListener(TweenEvent.COMPLETE, onComplete);
+			var tweenFnc:ITween;
+			
+			//Auto hide
+			if(data.visible != null && dspObj) {
+				if(data.visible) {
+					var tweenShow:ITween	= Tweener.func(onShowElement, [dspObj]);
+					serial					= Tweener.serial(tweenShow, tween);
+				} else {
+					var tweenHide:ITween	= Tweener.func(onHideElement, [dspObj]);
+					serial					= Tweener.serial(tween, tweenHide);
+				}
+				
+				tweenFnc	= serial as ITween;
+			} else {
+				tweenFnc	= tween;
+			}
+			
+			//Set functions
+			var fnc:Function;
+			
+			if(data.onComplete != null) {
+				fnc					= data.onComplete as Function;
+				tweenFnc.onComplete	= fnc;
+				
+				if(data.onCompleteParams != null) {
+					tweenFnc.onCompleteParams	= data.onCompleteParams as Array;
+				}
+			}
+			
+			if(data.onPlay != null) {
+				fnc				= data.onPlay as Function;
+				tweenFnc.onPlay	= fnc;
+				
+				if(data.onPlayParams != null) {
+					tweenFnc.onPlayParams	= data.onPlayParams as Array;
+				}
+			}
+			
+			if(data.onStop != null) {
+				fnc				= data.onStop as Function;
+				tweenFnc.onStop	= fnc;
+				
+				if(data.onStopParams != null) {
+					tweenFnc.onStopParams	= data.onStopParams as Array;
+				}
+			}
+			
+			if(data.onUpdate != null) {
+				fnc					= data.onUpdate as Function;
+				tweenFnc.onUpdate	= fnc;
+				
+				if(data.onUpdateParams != null) {
+					tweenFnc.onUpdateParams	= data.onUpdateParams as Array;
+				}
+			}
+			
+			//Autoplay
+			if(data.autoPlay) {
+				tweenFnc.play();
+			}
 		}
 		
-		/** Reference to the TweenMax object **/
-		public function get tweener():GTween {
-			return _tween;
+		/** @private **/
+		private function onShowElement(element:DisplayObject):void {
+			element.visible	= true;
+		}
+		
+		/** @private **/
+		private function onHideElement(element:DisplayObject):void {
+			element.visible	= false;
+		}
+		
+		/** Play animation. **/
+		public function play():void {
+			if(serial) {
+				serial.play();
+			}
+			else if(tween) {
+				tween.play();
+			}
+		}
+		
+		/** Stop animation. **/
+		public function stop():void {
+			if(serial) {
+				serial.stop();
+			}
+			else if(tween) {
+				tween.stop();
+			}
 		}
 		
 		/** Reference to the TweenMax object **/
 		public function get currentProgress():Number {
-			if(_tween) {
-				return _tween.calculatedPosition;
+			if(tween) {
+				return tween.position;
 			} else {
 				return 0;
-			}
-		}
-		
-		/** @private **/
-		private function onInit(tween:GTween):void {
-			if(data.onInit) {
-				var fnc:Function	= data.onInit as Function;
-				
-				if(data.onCompleteParams) {
-					fnc(data.onInitParams);
-				} else {
-					fnc();
-				}
-			}
-		}
-		
-		/** @private **/
-		private function onChange(tween:GTween):void {
-			if(data.onChange) {
-				var fnc:Function	= data.onChange as Function;
-				
-				if(data.onCompleteParams) {
-					fnc(data.onChangeParams);
-				} else {
-					fnc();
-				}
-			}
-		}
-		
-		/** @private **/
-		private function onComplete(tween:GTween):void {
-			trace('Tween::onComplete');
-			if(data.onComplete) {
-				var fnc:Function	= data.onComplete as Function;
-				
-				if(data.onCompleteParams) {
-					fnc(data.onCompleteParams);
-				} else {
-					fnc();
-				}
 			}
 		}
 	}

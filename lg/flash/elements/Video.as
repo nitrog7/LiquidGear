@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2009 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -46,6 +46,7 @@ package lg.flash.elements {
 	import lg.flash.events.ElementEvent;
 	import lg.flash.motion.Tween;
 	import lg.flash.motion.easing.Quintic;
+	import lg.flash.motion.tweens.ITween;
 	
 	/**
 	* Dispatched when a video begins to play.
@@ -496,11 +497,19 @@ package lg.flash.elements {
 		
 		/** Stop the video, remove from stage, and clean from memory. **/
 		public function stop():void {
-			trace('Video::onStopVideo', id, data);
+			trace('Video::stop', id, data);
 			if(data) {
 				data.isPlaying	= false;
 				data.stopVideo	= true;
 			}
+			
+			if(video && videoClip) {
+				videoClip.visible	= false;
+				video.pause();
+				video.close();
+				videoClip.visible	= true;
+			}
+			
 			trace('Video::data.autoClean', autoClean);
 			if(autoClean) {
 				clean(false);
@@ -667,22 +676,12 @@ package lg.flash.elements {
 		}
 		
 		public override function hide(duration:Number=0, delay:Number=0, callback:Function=null, params:Array=null):VisualElement {
-			var obj:Object	= {};
-			obj.target		= this;
-			obj.autoAlpha	= 0;
-			obj.duration	= duration;
-			obj.delay		= delay;
-			obj.ease		= Quintic.easeInOut;
-			obj.overwrite	= 2;
-			
-			if(callback != null) {
-				obj.onComplete			= callback;
-				obj.onCompleteParams	= params;
-			} else {
-				obj.onComplete			= onHide;
+			if(callback == null) {
+				callback	= onHide;
+				params		= null;
 			}
 			
-			new Tween(obj);
+			animate({duration:duration, delay:delay, alpha:0, ease:Quintic.easeInOut, onComplete:callback, onCompleteParams:params});
 			
 			return this;
 		}
@@ -704,11 +703,12 @@ package lg.flash.elements {
 			}
 			
 			//Close connections
+			trace('Video::clean', video);
 			if(video) {
 				video.removeEventListener(NetStatusEvent.NET_STATUS, onStatusVideo);
 				video.client	= {};
 				video.pause();
-				video.play(null);
+				//video.play(null);
 				video.close();
 				video	= null;
 			}

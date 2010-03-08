@@ -59,7 +59,6 @@ package lg.flash.elements {
 		**/
 		public function Image(obj:Object) {
 			super();
-			cacheAsBitmap	= true;
 			
 			//Set Defaults
 			data.x			= 0;

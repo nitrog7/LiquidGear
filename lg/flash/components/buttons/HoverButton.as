@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2009 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -29,9 +29,9 @@
 
 package lg.flash.components.buttons {
 	//LG Classes
-	import lg.flash.events.ElementEvent;
-	import lg.flash.elements.VisualElement;
 	import lg.flash.elements.Image;
+	import lg.flash.elements.VisualElement;
+	import lg.flash.events.ElementEvent;
 	
 	public class HoverButton extends VisualElement {
 		private var _outClip:VisualElement;
@@ -41,7 +41,6 @@ package lg.flash.components.buttons {
 		public function HoverButton(obj:Object) {
 			super();
 			
-			cacheAsBitmap	= true;
 			button();
 			
 			data.out		= null;
@@ -82,25 +81,25 @@ package lg.flash.components.buttons {
 		}
 		
 		private function onButtonOut(e:ElementEvent):void {
-			if(_outClip) _outClip.animate({duration:data.duration, autoAlpha:1});
-			if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:0});
-			if(_clickClip) _clickClip.animate({duration:data.duration, autoAlpha:0});
+			if(_outClip) _outClip.animate({duration:data.duration, alpha:1});
+			if(_overClip) _overClip.animate({duration:data.duration, alpha:0});
+			if(_clickClip) _clickClip.animate({duration:data.duration, alpha:0});
 		}
 		
 		private function onButtonOver(e:ElementEvent):void {
-			if(_outClip) _outClip.animate({duration:data.duration, autoAlpha:0});
-			if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:1});
-			if(_clickClip) _clickClip.animate({duration:data.duration, autoAlpha:0});
+			if(_outClip) _outClip.animate({duration:data.duration, alpha:0});
+			if(_overClip) _overClip.animate({duration:data.duration, alpha:1});
+			if(_clickClip) _clickClip.animate({duration:data.duration, alpha:0});
 		}
 		
 		private function onButtonClick(e:ElementEvent):void {
-			if(_outClip) _outClip.animate({duration:data.duration, autoAlpha:0});
+			if(_outClip) _outClip.animate({duration:data.duration, alpha:0});
 				
 			if(_clickClip) {
-				_clickClip.animate({duration:data.duration, autoAlpha:1});
-				if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:0});
+				_clickClip.animate({duration:data.duration, alpha:1});
+				if(_overClip) _overClip.animate({duration:data.duration, alpha:0});
 			} else {
-				if(_overClip) _overClip.animate({duration:data.duration, autoAlpha:1});	
+				if(_overClip) _overClip.animate({duration:data.duration, alpha:1});	
 			}
 		}
 		

@@ -183,8 +183,6 @@ package lg.flash.elements {
 	*	
 	**/
 	public class Element extends Sprite {
-		/** Unique identifier for the object. **/
-		public var id:String			= '';
 		/** Title. **/
 		public var title:String			= '';
 		//public var lang:String			= '';
@@ -229,6 +227,7 @@ package lg.flash.elements {
 			mouseEnabled	= false;
 			mouseChildren	= false;
 			
+			data.id			= name;
 			data.isLoaded	= false;
 			data.stretch	= true;
 			
@@ -243,8 +242,7 @@ package lg.flash.elements {
 			}
 			
 			if(obj.id) {
-				id			= obj.id;
-				obj.name	= id;
+				id	= obj.id;
 			}
 			
 			for(var s:String in obj) {
@@ -268,6 +266,15 @@ package lg.flash.elements {
 					this[s] = obj[s];
 				}
 			}
+		}
+		
+		/** Unique identifier for the object. **/
+		public function get id():String {
+			return data.id;
+		}
+		public function set id(value:String):void {
+			data.id	= value;
+			name	= value;
 		}
 		
 		/** Is set to true when an element is loaded **/
