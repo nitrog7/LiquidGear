@@ -25,20 +25,17 @@
  * THE SOFTWARE.
  * 
  */
-package lg.flash.motion.core.updaters
-{
+package lg.flash.motion.core.updaters {
 	import flash.utils.Dictionary;
 	import lg.flash.motion.core.utils.ClassRegistry;
 	
 	/**
-	 * 全てのオブジェクトを対象とした IUpdater の実装です.
+	 * IUpdater aimed at implementation of all objects.
 	 * 
 	 * @author	yossy:beinteractive
 	 */
-	public class ObjectUpdater extends AbstractUpdater
-	{
-		public static function register(registry:ClassRegistry):void
-		{
+	public class ObjectUpdater extends AbstractUpdater {
+		public static function register(registry:ClassRegistry):void {
 			registry.registerClassWithTargetClassAndPropertyName(ObjectUpdater, Object, '*');
 		}
 		
@@ -47,61 +44,40 @@ package lg.flash.motion.core.updaters
 		protected var _destination:Dictionary = new Dictionary();
 		protected var _relativeMap:Dictionary = new Dictionary();
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function get target():Object
-		{
+		/** @inheritDoc **/
+		public override function get target():Object {
 			return _target;
 		}
 		
-		/**
-		 * @private
-		 */
-		override public function set target(value:Object):void
-		{
+		/** @inheritDoc **/
+		public override function set target(value:Object):void {
 			_target = value;
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function setSourceValue(propertyName:String, value:Number, isRelative:Boolean = false):void
-		{
+		/** @inheritDoc **/
+		public override function setSourceValue(propertyName:String, value:Number, isRelative:Boolean = false):void {
 			_source[propertyName] = value;
 			_relativeMap['source.' + propertyName] = isRelative;
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function setDestinationValue(propertyName:String, value:Number, isRelative:Boolean = false):void
-		{
+		/** @inheritDoc **/
+		public override function setDestinationValue(propertyName:String, value:Number, isRelative:Boolean = false):void {
 			_destination[propertyName] = value;
 			_relativeMap['dest.' + propertyName] = isRelative;
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function getObject(propertyName:String):Object
-		{
+		/** @inheritDoc **/
+		override public function getObject(propertyName:String):Object {
 			return _target[propertyName];
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function setObject(propertyName:String, value:Object):void
-		{
+		/** @inheritDoc **/
+		public override function setObject(propertyName:String, value:Object):void {
 			_target[propertyName] = value;
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function resolveValues():void
-		{
+		/** @inheritDoc **/
+		protected override function resolveValues():void {
 			var key:String, target:Object = _target, source:Dictionary = _source, dest:Dictionary = _destination, rMap:Dictionary = _relativeMap;
 			
 			for (key in source) {
@@ -122,11 +98,8 @@ package lg.flash.motion.core.updaters
 			}
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function updateObject(factor:Number):void 
-		{
+		/** @inheritDoc **/
+		protected override function updateObject(factor:Number):void {
 			var invert:Number = 1.0 - factor;
 			var t:Object = _target;
 			var d:Dictionary = _destination;
@@ -134,18 +107,15 @@ package lg.flash.motion.core.updaters
 			var name:String;
 			
 			for (name in d) {
-				trace('ObjectUpdater::updateObject', name);
 				t[name] = s[name] * invert + d[name] * factor;
 			}
 		}
 		
-		override protected function newInstance():AbstractUpdater 
-		{
+		protected override function newInstance():AbstractUpdater {
 			return new ObjectUpdater();
 		}
 		
-		override protected function copyFrom(source:AbstractUpdater):void 
-		{
+		protected override function copyFrom(source:AbstractUpdater):void {
 			super.copyFrom(source);
 			
 			var obj:ObjectUpdater = source as ObjectUpdater;
@@ -156,8 +126,7 @@ package lg.flash.motion.core.updaters
 			copyObject(_relativeMap, obj._relativeMap);
 		}
 		
-		private function copyObject(to:Object, from:Object):void
-		{
+		private function copyObject(to:Object, from:Object):void {
 			for (var name:String in from) {
 				to[name] = from[name];
 			}

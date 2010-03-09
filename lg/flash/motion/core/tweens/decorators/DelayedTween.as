@@ -25,54 +25,42 @@
  * THE SOFTWARE.
  * 
  */
-package lg.flash.motion.core.tweens.decorators
-{
+package lg.flash.motion.core.tweens.decorators {
 	import lg.flash.motion.core.tweens.AbstractTween;
 	import lg.flash.motion.core.tweens.IITween;
 	import lg.flash.motion.core.tweens.TweenDecorator;
 	
 	/**
-	 * ITween に遅延を加えて実行.
-	 * 
+	 * Delay the execution of an ITween.
 	 * @author	yossy:beinteractive
 	 */
-	public class DelayedTween extends TweenDecorator
-	{
-		public function DelayedTween(baseTween:IITween, preDelay:Number, postDelay:Number)
-		{
-			super(baseTween, 0);
-			
-			_duration = preDelay + baseTween.duration + postDelay;
-			_preDelay = preDelay;
-			_postDelay = postDelay;
-		}
-		
+	public class DelayedTween extends TweenDecorator {
 		private var _preDelay:Number;
 		private var _postDelay:Number;
 		
-		public function get preDelay():Number
-		{
+		public function DelayedTween(baseTween:IITween, preDelay:Number, postDelay:Number) {
+			super(baseTween, 0);
+			
+			_duration	= preDelay + baseTween.duration + postDelay;
+			_preDelay	= preDelay;
+			_postDelay	= postDelay;
+		}
+		
+		public function get preDelay():Number {
 			return _preDelay;
 		}
 		
-		public function get postDelay():Number
-		{
+		public function get postDelay():Number {
 			return _postDelay;
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function internalUpdate(time:Number):void 
-		{
+		/** @inheritDoc **/
+		protected override function internalUpdate(time:Number):void {
 			_baseTween.update(time - _preDelay);
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function newInstance():AbstractTween 
-		{
+		/** @inheritDoc **/
+		protected override function newInstance():AbstractTween  {
 			return new DelayedTween(_baseTween.clone() as IITween, _preDelay, _postDelay);
 		}
 	}

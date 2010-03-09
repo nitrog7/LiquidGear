@@ -178,6 +178,9 @@ package lg.flash.elements {
 			return bounds;
 		}
 		
+		/** Clone the Image element.
+		 * @return Cloned Image element.
+		 */		
 		public function clone():Image {
 			if(!image) {
 				return null;
@@ -206,6 +209,7 @@ package lg.flash.elements {
 			image.transform.matrix	= matrix;
 		}
 		
+		/** Clean up element and restore to empty state **/
 		public function clean():void {
 			if(image) {
 				if(contains(image)) {

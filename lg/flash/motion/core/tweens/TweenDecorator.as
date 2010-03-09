@@ -30,72 +30,52 @@ package lg.flash.motion.core.tweens
 	import lg.flash.motion.tweens.ITween;
 	
 	/**
-	 * .
-	 * 
 	 * @author	yossy:beinteractive
 	 */
-	public class TweenDecorator extends AbstractTween
-	{
-		public function TweenDecorator(baseTween:IITween, position:Number)
-		{
-			super(baseTween.ticker, position);
-			
-			_baseTween = baseTween;
-			_duration = baseTween.duration;
-		}
-		
+	public class TweenDecorator extends AbstractTween {
 		protected var _baseTween:IITween;
 		
-		public function get baseTween():IITween
-		{
+		public function TweenDecorator(baseTween:IITween, position:Number) {
+			super(baseTween.ticker, position);
+			
+			_baseTween	= baseTween;
+			_duration	= baseTween.duration;
+		}
+		
+		public function get baseTween():IITween {
 			return _baseTween;
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function play():void 
-		{
+		/** @inheritDoc **/
+		public override function play():void  {
 			if (!_isPlaying) {
 				_baseTween.firePlay();
 				super.play();
 			}
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function firePlay():void 
-		{
+		/** @inheritDoc **/
+		public override function firePlay():void {
 			super.firePlay();
 			_baseTween.firePlay();
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function stop():void 
-		{
+		/** @inheritDoc **/
+		public override function stop():void {
 			if (_isPlaying) {
 				super.stop();
 				_baseTween.fireStop();
 			}
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override public function fireStop():void 
-		{
+		/** @inheritDoc **/
+		public override function fireStop():void {
 			super.fireStop();
 			_baseTween.fireStop();
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function internalUpdate(time:Number):void 
-		{
+		/** @inheritDoc **/
+		protected override function internalUpdate(time:Number):void {
 			_baseTween.update(time);
 		}
 	}

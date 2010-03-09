@@ -35,10 +35,13 @@ package lg.flash.motion {
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	
-	//LG
 	import lg.flash.motion.core.easing.IEasing;
 	import lg.flash.motion.core.easing.IPhysicalEasing;
 	import lg.flash.motion.core.ticker.ITicker;
+	import lg.flash.motion.core.tweens.IITween;
+	import lg.flash.motion.core.tweens.ObjectTween;
+	import lg.flash.motion.core.tweens.PhysicalTween;
+	import lg.flash.motion.core.tweens.TweenDecorator;
 	import lg.flash.motion.core.tweens.actions.AddChildAction;
 	import lg.flash.motion.core.tweens.actions.FunctionAction;
 	import lg.flash.motion.core.tweens.actions.RemoveFromParentAction;
@@ -49,16 +52,12 @@ package lg.flash.motion {
 	import lg.flash.motion.core.tweens.decorators.SlicedTween;
 	import lg.flash.motion.core.tweens.groups.ParallelTween;
 	import lg.flash.motion.core.tweens.groups.SerialTween;
-	import lg.flash.motion.core.tweens.IITween;
-	import lg.flash.motion.core.tweens.ObjectTween;
-	import lg.flash.motion.core.tweens.PhysicalTween;
-	import lg.flash.motion.core.tweens.TweenDecorator;
 	import lg.flash.motion.core.updaters.BezierUpdater;
+	import lg.flash.motion.core.updaters.ObjectUpdater;
+	import lg.flash.motion.core.updaters.UpdaterFactory;
 	import lg.flash.motion.core.updaters.display.DisplayObjectUpdater;
 	import lg.flash.motion.core.updaters.display.MovieClipUpdater;
 	import lg.flash.motion.core.updaters.geom.PointUpdater;
-	import lg.flash.motion.core.updaters.ObjectUpdater;
-	import lg.flash.motion.core.updaters.UpdaterFactory;
 	import lg.flash.motion.core.utils.ClassRegistry;
 	import lg.flash.motion.easing.Linear;
 	import lg.flash.motion.easing.Physical;
@@ -105,7 +104,7 @@ package lg.flash.motion {
 		 * @param	easing	Easing function
 		 * @return	Tween created
 		 */
-		public static function tween(target:Object, to:Object, from:Object = null, time:Number = 1.0, easing:IEasing = null):IObjectTween {
+		public static function tween(target:Object, to:Object, from:Object = null, time:Number = 1, easing:IEasing = null):IObjectTween {
 			var tween:ObjectTween	= new ObjectTween(_ticker);
 			tween.updater	= _updaterFactory.create(target, to, from);
 			tween.time		= time;
@@ -122,7 +121,7 @@ package lg.flash.motion {
 		 * @param	easing	Easing function
 		 * @return	Tween created
 		 */
-		public static function to(target:Object, to:Object, time:Number = 1.0, easing:IEasing = null):IObjectTween {
+		public static function to(target:Object, to:Object, time:Number=1, easing:IEasing = null):IObjectTween {
 			var tween:ObjectTween = new ObjectTween(_ticker);
 			tween.updater	= _updaterFactory.create(target, to, null);
 			tween.time		= time;
@@ -139,7 +138,7 @@ package lg.flash.motion {
 		 * @param	easing	Easing function
 		 * @return	Tween created
 		 */
-		public static function from(target:Object, from:Object, time:Number = 1.0, easing:IEasing = null):IObjectTween {
+		public static function from(target:Object, from:Object, time:Number=1, easing:IEasing = null):IObjectTween {
 			var tween:ObjectTween = new ObjectTween(_ticker);
 			tween.updater = _updaterFactory.create(target, null, from);
 			tween.time = time;
@@ -157,7 +156,7 @@ package lg.flash.motion {
 		 * @param	applyTime	Time to apply
 		 * @param	easing		Easing function
 		 */
-		public static function apply(target:Object, to:Object, from:Object = null, time:Number = 1.0, applyTime:Number = 1.0, easing:IEasing = null):void {
+		public static function apply(target:Object, to:Object, from:Object = null, time:Number=1, applyTime:Number=1, easing:IEasing = null):void {
 			var tween:ObjectTween = new ObjectTween(_ticker);
 			tween.updater = _updaterFactory.create(target, to, from);
 			tween.time = time;
@@ -176,7 +175,7 @@ package lg.flash.motion {
 		 * @param	easing			Easing function
 		 * @return	Tween created
 		 */
-		public static function bezier(target:Object, to:Object, from:Object = null, controlPoint:Object = null, time:Number = 1.0, easing:IEasing = null):IObjectTween {
+		public static function bezier(target:Object, to:Object, from:Object = null, controlPoint:Object = null, time:Number=1, easing:IEasing = null):IObjectTween {
 			var tween:ObjectTween = new ObjectTween(_ticker);
 			tween.updater = _updaterFactory.createBezier(target, to, from, controlPoint);
 			tween.time = time;
@@ -194,11 +193,11 @@ package lg.flash.motion {
 		 * @param	easing			Easing function
 		 * @return	Tween created
 		 */
-		public static function bezierTo(target:Object, to:Object, controlPoint:Object = null, time:Number = 1.0, easing:IEasing = null):IObjectTween {
-			var tween:ObjectTween = new ObjectTween(_ticker);
-			tween.updater = _updaterFactory.createBezier(target, to, null, controlPoint);
-			tween.time = time;
-			tween.easing = easing || Linear.easeNone;
+		public static function bezierTo(target:Object, to:Object, controlPoint:Object = null, time:Number=1, easing:IEasing = null):IObjectTween {
+			var tween:ObjectTween	= new ObjectTween(_ticker);
+			tween.updater			= _updaterFactory.createBezier(target, to, null, controlPoint);
+			tween.time				= time;
+			tween.easing			= easing || Linear.easeNone;
 			return tween;
 		}
 		
@@ -212,7 +211,7 @@ package lg.flash.motion {
 		 * @param	easing			Easing function
 		 * @return	Tween created
 		 */
-		public static function bezierFrom(target:Object, from:Object, controlPoint:Object = null, time:Number = 1.0, easing:IEasing = null):IObjectTween {
+		public static function bezierFrom(target:Object, from:Object, controlPoint:Object = null, time:Number=1, easing:IEasing = null):IObjectTween {
 			var tween:ObjectTween = new ObjectTween(_ticker);
 			tween.updater = _updaterFactory.createBezier(target, null, from, controlPoint);
 			tween.time = time;
@@ -272,20 +271,10 @@ package lg.flash.motion {
 		 * @param	applyTime	Time to apply
 		 * @param	easing		Easing function
 		 */
-		public static function physicalApply(target:Object, to:Object, from:Object = null, applyTime:Number = 1.0, easing:IPhysicalEasing = null):void {
+		public static function physicalApply(target:Object, to:Object, from:Object = null, applyTime:Number=1, easing:IPhysicalEasing = null):void {
 			var tween:PhysicalTween = new PhysicalTween(_ticker);
 			tween.updater = _updaterFactory.createPhysical(target, to, from, easing || Physical.exponential());
 			tween.update(applyTime);
-		}
-		
-		/**
-		 * Run concurrent tweens.
-		 * 
-		 * @param	...tweens	Array of tweens
-		 * @return	Tween created
-		 */
-		public static function parallel(...tweens:Array):ITweenGroup {
-			return parallelTweens(tweens);
 		}
 		
 		/**
@@ -294,7 +283,7 @@ package lg.flash.motion {
 		 * @param	tweens	Array of tweens
 		 * @return	Tween created
 		 */
-		public static function parallelTweens(tweens:Array):ITweenGroup {
+		public static function parallel(tweens:Array):ITweenGroup {
 			return new ParallelTween(tweens, _ticker, 0);
 		}
 		
@@ -304,17 +293,7 @@ package lg.flash.motion {
 		 * @param	...tweens	Array of tweens
 		 * @return	Tween created
 		 */
-		public static function serial(...tweens:Array):ITweenGroup {
-			return serialTweens(tweens);
-		}
-		
-		/**
-		 * Run tweens in order, one after the other.
-		 * 
-		 * @param	tweens	結合するトゥイーンの配列
-		 * @return	Tween created
-		 */
-		public static function serialTweens(tweens:Array):ITweenGroup {
+		public static function serial(tweens:Array):ITweenGroup {
 			return new SerialTween(tweens, _ticker, 0);
 		}
 		
@@ -326,7 +305,7 @@ package lg.flash.motion {
 		 * @return	Tween created
 		 */
 		public static function reverse(tween:ITween, reversePosition:Boolean = true):ITween {
-			var pos:Number = reversePosition ? tween.duration - tween.position : 0.0;
+			var pos:Number = reversePosition ? tween.duration - tween.position : 0;
 			
 			if (tween is ReversedTween) {
 				return new TweenDecorator((tween as ReversedTween).baseTween, pos);
@@ -391,7 +370,7 @@ package lg.flash.motion {
 		 * @param	postDelay	Delay time after animation (seconds)
 		 * @return	Tween created
 		 */
-		public static function delay(tween:ITween, delay:Number, postDelay:Number = 0.0):ITween {
+		public static function delay(tween:ITween, delay:Number, postDelay:Number=0):ITween {
 			return new DelayedTween(tween as IITween, delay, postDelay);
 		}
 		

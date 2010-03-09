@@ -37,6 +37,7 @@ package lg.flash.motion {
 	import lg.flash.events.ElementDispatcher;
 	import lg.flash.events.ElementEvent;
 	import lg.flash.motion.Tweener;
+	import lg.flash.motion.core.easing.IEasing;
 	import lg.flash.motion.tweens.ITween;
 	import lg.flash.motion.tweens.ITweenGroup;
 	
@@ -44,9 +45,15 @@ package lg.flash.motion {
 	*	<p>Extends BetweenAS3 functionality.</p>
 	*/
 	public class Tween extends ElementDispatcher {
+		public var target:Object		= 0;
+		public var duration:Number		= 0;
+		public var ease:IEasing;
+		public var autoPlay:Boolean		= true;
 		public var tween:ITween;
 		public var serial:ITweenGroup;
 		
+		private var _tweens:Array		= [];
+		private var _parallel:ITweenGroup;
 		/** 
 		*	Constructs a new Tween object
 		*	@param obj Object containing all properties to construct the class.
@@ -59,12 +66,12 @@ package lg.flash.motion {
 				return;
 			}
 			
-			var element:Object		= obj.target;
+			target					= obj.target;
 			
 			//Set defaults
+			data.target				= null;
 			data.duration			= 0;
 			data.delay				= 0;
-			data.autoPlay			= true;
 			data.ease				= null;
 			data.visible			= null;
 			data.onChange			= null;
@@ -79,11 +86,12 @@ package lg.flash.motion {
 			//Only get properties that are in the element
 			var tweenObj:Object		= {};
 			var dspObj:DisplayObject;
+			var ignore:Array		= ['delay'];
 			
 			for(var s:String in obj) {
-				if(element.hasOwnProperty(s)) {
-					if(s == 'alpha' && element is DisplayObject) {
-						dspObj	= element as DisplayObject;
+				if(target.hasOwnProperty(s)) {
+					if(s == 'alpha' && target is DisplayObject) {
+						dspObj	= target as DisplayObject;
 						
 						if(obj.alpha == 0 && dspObj.visible) {
 							data.visible	= false;
@@ -95,27 +103,26 @@ package lg.flash.motion {
 					if(!(s in data)) {
 						tweenObj[s]	= obj[s];
 					}
+				} 
+				else if(hasOwnProperty(s) && ignore.indexOf(s) < 0) {
+					this[s]	= obj[s];
+				} else {
+					data[s]	= obj[s];
 				}
-				
-				data[s]	= obj[s];
 			}
 			
-			var tween:ITween	= Tweener.to(element, tweenObj, data.duration, data.ease);
-			
-			if(data.delay > 0) {
-				Tweener.delay(tween, data.delay);
-			}
-			
+			//Create tween
+			var tween:ITween	= Tweener.to(target, tweenObj, duration, ease);
 			var tweenFnc:ITween;
 			
 			//Auto hide
 			if(data.visible != null && dspObj) {
 				if(data.visible) {
 					var tweenShow:ITween	= Tweener.func(onShowElement, [dspObj]);
-					serial					= Tweener.serial(tweenShow, tween);
+					serial					= Tweener.serial([tweenShow, tween]);
 				} else {
 					var tweenHide:ITween	= Tweener.func(onHideElement, [dspObj]);
-					serial					= Tweener.serial(tween, tweenHide);
+					serial					= Tweener.serial([tween, tweenHide]);
 				}
 				
 				tweenFnc	= serial as ITween;
@@ -123,48 +130,56 @@ package lg.flash.motion {
 				tweenFnc	= tween;
 			}
 			
+			_tweens.push(tweenFnc);
+			
+			//Set delay
+			setDelay(data.delay);
+			
+			//Combine tweens
+			_parallel		= Tweener.parallel(_tweens);
+			
 			//Set functions
 			var fnc:Function;
 			
 			if(data.onComplete != null) {
-				fnc					= data.onComplete as Function;
-				tweenFnc.onComplete	= fnc;
+				fnc						= data.onComplete as Function;
+				_parallel.onComplete	= fnc;
 				
 				if(data.onCompleteParams != null) {
-					tweenFnc.onCompleteParams	= data.onCompleteParams as Array;
+					_parallel.onCompleteParams	= data.onCompleteParams as Array;
 				}
 			}
 			
 			if(data.onPlay != null) {
-				fnc				= data.onPlay as Function;
-				tweenFnc.onPlay	= fnc;
+				fnc					= data.onPlay as Function;
+				_parallel.onPlay	= fnc;
 				
 				if(data.onPlayParams != null) {
-					tweenFnc.onPlayParams	= data.onPlayParams as Array;
+					_parallel.onPlayParams	= data.onPlayParams as Array;
 				}
 			}
 			
 			if(data.onStop != null) {
 				fnc				= data.onStop as Function;
-				tweenFnc.onStop	= fnc;
+				_parallel.onStop	= fnc;
 				
 				if(data.onStopParams != null) {
-					tweenFnc.onStopParams	= data.onStopParams as Array;
+					_parallel.onStopParams	= data.onStopParams as Array;
 				}
 			}
 			
 			if(data.onUpdate != null) {
 				fnc					= data.onUpdate as Function;
-				tweenFnc.onUpdate	= fnc;
+				_parallel.onUpdate	= fnc;
 				
 				if(data.onUpdateParams != null) {
-					tweenFnc.onUpdateParams	= data.onUpdateParams as Array;
+					_parallel.onUpdateParams	= data.onUpdateParams as Array;
 				}
 			}
 			
 			//Autoplay
-			if(data.autoPlay) {
-				tweenFnc.play();
+			if(autoPlay) {
+				play();
 			}
 		}
 		
@@ -178,32 +193,94 @@ package lg.flash.motion {
 			element.visible	= false;
 		}
 		
+		public function get delay():Number {
+			var value:Number	= data.delay as Number;
+			return value;
+		}
+		
+		public function setDelay(value:Number):void {
+			data.delay	= value;
+			
+			if(value > 0) {
+				var tweenLen:int	= _tweens.length;
+				var t:ITween;
+				var d:ITween;
+				var delayArr:Array	= [];
+				
+				for(var g:int=0; g<tweenLen; g++) {
+					t			= _tweens[g] as ITween;
+					d			= Tweener.delay(t, delay);
+					delayArr[g]	= d;
+				}
+				
+				_tweens	= delayArr;
+			}
+		}
+		
 		/** Play animation. **/
 		public function play():void {
-			if(serial) {
-				serial.play();
-			}
-			else if(tween) {
-				tween.play();
-			}
+			_parallel.play();
 		}
 		
 		/** Stop animation. **/
 		public function stop():void {
-			if(serial) {
-				serial.stop();
-			}
-			else if(tween) {
-				tween.stop();
-			}
+			_parallel.stop();
 		}
 		
 		/** Reference to the TweenMax object **/
 		public function get currentProgress():Number {
-			if(tween) {
-				return tween.position;
+			if(_parallel) {
+				return _parallel.position;
 			} else {
 				return 0;
+			}
+		}
+		
+		/** Indicates whether tween is playing. **/
+		public function get isPlaying():Boolean {
+			if(_parallel) {
+				return _parallel.isPlaying;
+			} else {
+				return false;
+			}
+		}
+		
+		/** Goto tween position and play. **/
+		public function gotoAndPlay(position:Number):void {
+			if(_parallel) {
+				_parallel.gotoAndPlay(position);
+			}
+		}
+		
+		/** Goto tween position and stop. **/
+		public function gotoAndStop(position:Number):void {
+			if(_parallel) {
+				_parallel.gotoAndStop(position);
+			}
+		}
+		
+		public function set bezier(obj:Object):void {
+			var t:ITween;
+			var to:Object		= (obj.to != undefined) ? obj.to as Object : null;
+			var from:Object		= (obj.from != undefined) ? obj.from as Object : null;
+			var through:Object	= (obj.through != undefined) ? obj.through as Object : null;
+			
+			if(!through) {
+				return;
+			}
+			
+			if(to && !from) {
+				t	= Tweener.bezierTo(target, to, through, duration, ease);
+			}
+			else if(!to && from) {
+				t	= Tweener.bezierFrom(target, from, through, duration, ease);
+			}
+			else if(obj.to != undefined && obj.from != undefined) {
+				t	= Tweener.bezier(target, to, from, through, duration, ease);
+			}
+			
+			if(t) {
+				_tweens.push(t);
 			}
 		}
 	}

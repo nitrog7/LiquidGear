@@ -35,18 +35,9 @@ package lg.flash.motion.core.tweens
 	import lg.flash.motion.tweens.ITween;
 	
 	/**
-	 * .
-	 * 
 	 * @author	yossy:beinteractive
 	 */
-	public class AbstractTween extends TickerListener implements IITween
-	{
-		public function AbstractTween(ticker:ITicker, position:Number)
-		{
-			_ticker = ticker;
-			_position = position;
-		}
-		
+	public class AbstractTween extends TickerListener implements IITween {
 		protected var _ticker:ITicker;
 		protected var _position:Number = 0;
 		protected var _duration:Number = 0;
@@ -57,76 +48,58 @@ package lg.flash.motion.core.tweens
 		protected var _willTriggerFlags:uint = 0;
 		protected var _classicHandlers:ClassicHandlers;
 		
-		/**
-		 * @inheritDoc
-		 */
-		public function get ticker():ITicker
-		{
+		public function AbstractTween(ticker:ITicker, position:Number) {
+			_ticker		= ticker;
+			_position	= position;
+		}
+		
+		/** @inheritDoc **/
+		public function get ticker():ITicker {
 			return _ticker;
 		}
 		
-		/**
-		 * このトゥイーンの継続時間 (秒) を返します.
-		 */
-		public function get duration():Number
-		{
+		/** Tween duration (seconds). **/
+		public function get duration():Number {
 			return _duration;
 		}
 		
-		/**
-		 * このトゥイーンの現在位置 (秒) を返します.
-		 */
-		public function get position():Number
-		{
+		/** Current position of the tween. **/
+		public function get position():Number {
 			return _position;
 		}
 		
-		/**
-		 * このトゥイーンが現在再生中であれば true, そうでなければ false を返します.
-		 */
-		public function get isPlaying():Boolean
-		{
+		/** If this tween is currently playing true, otherwise returns false. **/
+		public function get isPlaying():Boolean {
 			return _isPlaying;
 		}
 		
-		/**
-		 * @inheritDoc
-		 */
-		public function get stopOnComplete():Boolean
-		{
+		/** @inheritDoc **/
+		public function get stopOnComplete():Boolean {
 			return _stopOnComplete;
 		}
 		
-		/**
-		 * @private
-		 */
-		public function set stopOnComplete(value:Boolean):void
-		{
+		/** @private **/
+		public function set stopOnComplete(value:Boolean):void {
 			_stopOnComplete = value;
 		}
 		
-		public function get onPlay():Function
-		{
+		public function get onPlay():Function {
 			return _classicHandlers != null ? _classicHandlers.onPlay : null;
 		}
 		
-		public function set onPlay(value:Function):void
-		{
+		public function set onPlay(value:Function):void {
 			getClassicHandlers().onPlay = value;
 		}
 		
-		public function get onPlayParams():Array
-		{
+		public function get onPlayParams():Array {
 			return _classicHandlers != null ? _classicHandlers.onPlayParams : null;
 		}
 		
-		public function set onPlayParams(value:Array):void
-		{
+		public function set onPlayParams(value:Array):void {
 			getClassicHandlers().onPlayParams = value;
 		}
 		
-		public function get onStop():Function
-		{
+		public function get onStop():Function {
 			return _classicHandlers != null ? _classicHandlers.onStop : null;
 		}
 		
@@ -135,66 +108,54 @@ package lg.flash.motion.core.tweens
 			getClassicHandlers().onStop = value;
 		}
 		
-		public function get onStopParams():Array
-		{
+		public function get onStopParams():Array {
 			return _classicHandlers != null ? _classicHandlers.onStopParams : null;
 		}
 		
-		public function set onStopParams(value:Array):void
-		{
+		public function set onStopParams(value:Array):void {
 			getClassicHandlers().onStopParams = value;
 		}
 		
-		public function get onUpdate():Function
-		{
+		public function get onUpdate():Function {
 			return _classicHandlers != null ? _classicHandlers.onUpdate : null;
 		}
 		
-		public function set onUpdate(value:Function):void
-		{
+		public function set onUpdate(value:Function):void {
 			getClassicHandlers().onUpdate = value;
 		}
 		
-		public function get onUpdateParams():Array
-		{
+		public function get onUpdateParams():Array {
 			return _classicHandlers != null ? _classicHandlers.onUpdateParams : null;
 		}
 		
-		public function set onUpdateParams(value:Array):void
-		{
+		public function set onUpdateParams(value:Array):void {
 			getClassicHandlers().onUpdateParams = value;
 		}
 		
-		public function get onComplete():Function
-		{
+		public function get onComplete():Function {
 			return _classicHandlers != null ? _classicHandlers.onComplete : null;
 		}
 		
-		public function set onComplete(value:Function):void
-		{
+		public function set onComplete(value:Function):void {
 			getClassicHandlers().onComplete = value;
 		}
 		
-		public function get onCompleteParams():Array
-		{
+		public function get onCompleteParams():Array {
 			return _classicHandlers != null ? _classicHandlers.onCompleteParams : null;
 		}
 		
-		public function set onCompleteParams(value:Array):void
-		{
+		public function set onCompleteParams(value:Array):void {
 			getClassicHandlers().onCompleteParams = value;
 		}
 		
-		protected function getClassicHandlers():ClassicHandlers
-		{
+		protected function getClassicHandlers():ClassicHandlers {
 			return _classicHandlers || (_classicHandlers = new ClassicHandlers());
 		}
 		
 		/**
 		 * このトゥイーンの再生を現在の位置から開始します.
 		 */
-		public function play():void
-		{
+		public function play():void {
 			if (!_isPlaying) {
 				if (_position >= _duration) {
 					_position = 0;

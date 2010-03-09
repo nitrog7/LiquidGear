@@ -44,7 +44,7 @@ package lg.flash.motion.core.tweens.groups
 		{
 			super(ticker, position);
 			
-			var l:uint = targets.length;
+			var l:int = targets.length;
 			
 			_duration = 0;
 			
@@ -62,7 +62,7 @@ package lg.flash.motion.core.tweens.groups
 							_duration += _d.duration;
 							if (l > 4) {
 								_targets = new Vector.<IITween>(l - 4, true);
-								for (var i:uint = 4; i < l; ++i) {
+								for (var i:int = 4; i < l; ++i) {
 									var t:IITween = targets[i] as IITween;
 									_targets[i - 4] = t;
 									_duration += t.duration;
@@ -170,7 +170,7 @@ package lg.flash.motion.core.tweens.groups
 		 */
 		override protected function internalUpdate(time:Number):void 
 		{
-			var d:Number = 0, ld:Number = 0, lt:Number = _lastTime, l:uint, i:int, t:IITween;
+			var d:Number = 0, ld:Number = 0, lt:Number = _lastTime, l:int, i:int, t:IITween;
 			
 			if ((time - lt) >= 0) {
 				if (_a != null) {
@@ -251,9 +251,9 @@ package lg.flash.motion.core.tweens.groups
 		/**
 		 * @inheritDoc
 		 */
-		override protected function newInstance():AbstractTween 
-		{
+		override protected function newInstance():AbstractTween {
 			var targets:Array = [];
+			
 			if (_a != null) {
 				targets.push(_a.clone());
 			}
@@ -268,8 +268,8 @@ package lg.flash.motion.core.tweens.groups
 			}
 			if (_targets != null) {
 				var t:Vector.<IITween> = _targets;
-				var l:uint = t.length;
-				for (var i:uint = 0; i < l; ++i) {
+				var l:int = t.length;
+				for (var i:int = 0; i < l; ++i) {
 					targets.push(t[i].clone());
 				}
 			}

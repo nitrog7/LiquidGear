@@ -29,8 +29,11 @@
 
 package lg.flash.elements {
 	import flash.display.AVM1Movie;
+	import flash.display.DisplayObject;
 	import flash.display.Loader;
+	import flash.display.LoaderInfo;
 	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
@@ -68,8 +71,6 @@ package lg.flash.elements {
 		public var isPlaying:Boolean	= false;
 		/** Indicates whether the swf or MovieClip is usiong AS3. **/
 		public var isAS3:Boolean		= false;
-		/** Contains the loaded MovieClip **/
-		public var flash:*;
 		/** The ApplicationDomain of the loaded MovieClip. **/
 		public var domain:ApplicationDomain;
 		
@@ -78,7 +79,7 @@ package lg.flash.elements {
 		
 		/** 
 		*	Constructs a new Flash object
-		*	@param obj Object containing all properties to construct the class.	
+		*	@param obj	Object containing all properties to construct the class.	
 		**/
 		public function Flash(obj:Object) {
 			super();
@@ -98,15 +99,14 @@ package lg.flash.elements {
 				load(src);
 			}
 			
-			if(flash != null) {
-				addMovieClip();
-			}
-			
 			isSetup = true;
 		}
 		
-		/** @private **/
-		private function load(src:String):void {
+		/**
+		 * Load an external SWF file.
+		 * @param src	URL to the SWF file.
+		 */		
+		public function load(src:String):void {
 			this.src	= src;
 			var req:URLRequest		= new URLRequest(basePath+src);
 			
@@ -122,17 +122,6 @@ package lg.flash.elements {
 		}
 		
 		/** @private **/
-		private function addMovieClip():void {
-			addChild(flash);
-			
-			if(flash is Element) {
-				flash.loaded(onLoadElement);
-			} else {
-				addExisting();
-			}
-		}
-		
-		/** @private **/
 		private function onLoadElement(e:ElementEvent):void {
 			trigger('element_loaded');
 		}
@@ -144,70 +133,61 @@ package lg.flash.elements {
 		
 		/** @private **/
 		private function onLoaded(e:Event):void {
-			if(_ldr.content is MovieClip) {
-				flash	= MovieClip(_ldr.content);
-				domain	= _ldr.contentLoaderInfo.applicationDomain;
-				
-				if(data.autoPlay && data.autoPlay == 'true') {
-					flash.play();
-				} else {
-					flash.stop();
-					flash.gotoAndStop(0);
-				}
-				
-				addChild(flash);
-				isAS3 = true;
-			}
-			else if(_ldr.content is AVM1Movie) {
-				addChild(_ldr);
-				isAS3 = false;
+			var obj:DisplayObject	= _ldr.content as DisplayObject;
+			isAS3	= true;
+			
+			if(obj is MovieClip || obj is Sprite) {
+				var info:LoaderInfo	= _ldr.contentLoaderInfo;
+				domain	= info.applicationDomain;
 			}
 			
-			//Set size to content if not already set
-			if(data.width != undefined && data.width > 0) {
-				width	= data.width;
-			} else {
-				width	= _ldr.content.width;
+			if(obj is AVM1Movie) {
+				isAS3	= false;
 			}
 			
-			if(data.height != undefined && data.height > 0) {
-				height	= data.height;
-			} else {
-				height	= _ldr.content.height;
-			}
-			
-			//Dispatch LOAD event
-			trigger('element_loaded');
+			flash	= obj;
 		}
 		
-		/** @private **/
-		private function addExisting():void {
-			if(flash is MovieClip) {
-				if(data.autoPlay && data.autoPlay == 'true') {
-					flash.play();
-				} else {
-					flash.stop();
-					flash.gotoAndStop(0);
-				}
-				
-				isAS3 = true;
-			}
+		/** Contains the loaded DisplayObject **/
+		public function get flash():DisplayObject {
+			var obj:DisplayObject	= data.flash as DisplayObject;
+			return obj;
+		}
+		public function set flash(value:DisplayObject):void {
+			data.flash	= value;
+			clean();
+			addChild(value);
 			
 			//Set size to content if not already set
 			if(data.width != undefined && data.width > 0) {
 				width	= data.width;
 			} else {
-				width	= flash.width;
+				width	= value.width;
 			}
 			
 			if(data.height != undefined && data.height > 0) {
 				height	= data.height;
 			} else {
-				height	= flash.height;
+				height	= value.height;
 			}
 			
-			//Dispatch LOAD event
-			trigger('element_loaded');
+			if(flash is Element) {
+				var element:Element	= value as Element;
+				element.loaded(onLoadElement);
+			}
+			else if(value is MovieClip) {
+				var mc:MovieClip	= value as MovieClip;
+				
+				if(data.autoPlay && data.autoPlay == 'true') {
+					mc.play();
+				} else {
+					mc.gotoAndStop(0);
+				}
+				
+				trigger('element_loaded');
+			} else {
+				trigger('element_loaded');
+			}
 		}
 		
 		/** @private **/
@@ -232,10 +212,11 @@ package lg.flash.elements {
 		
 		/** Plays the MovieClip. **/
 		public function play():void {
-			isPlaying	= true;
+			var mc:MovieClip	= flash as MovieClip;
 			
-			if(flash) {
-				flash.play();
+			if(mc) {
+				isPlaying	= true;
+				mc.play();
 				
 				if(!isPlaying) {
 					isPlaying = true;
@@ -246,8 +227,10 @@ package lg.flash.elements {
 		
 		/** Stops the MovieClip. **/
 		public function stop():void {
-			if(flash) {
-				flash.stop();
+			var mc:MovieClip	= flash as MovieClip;
+			
+			if(mc) {
+				mc.stop();
 				
 				if(isPlaying) {
 					isPlaying = false;
@@ -258,10 +241,11 @@ package lg.flash.elements {
 		
 		/** Starts playing the MovieClip at the specified frame. **/
 		public function gotoAndPlay(frame:Object):void {
-			isPlaying	= true;
+			var mc:MovieClip	= flash as MovieClip;
 			
-			if(flash) {
-				flash.gotoAndPlay(frame);
+			if(mc) {
+				isPlaying	= true;
+				mc.gotoAndPlay(frame);
 				
 				if(!isPlaying) {
 					isPlaying = true;
@@ -272,8 +256,10 @@ package lg.flash.elements {
 		
 		/** Brings the playhead to the specified frame and stops it. **/
 		public function gotoAndStop(frame:Object):void {
-			if(flash) {
-				flash.gotoAndStop(frame);
+			var mc:MovieClip	= flash as MovieClip;
+			
+			if(mc) {
+				mc.gotoAndStop(frame);
 				
 				if(isPlaying) {
 					isPlaying = false;
@@ -282,23 +268,24 @@ package lg.flash.elements {
 			}
 		}
 		
-		/** Kill the object and clean from memory. **/
-		public override function kill():void {
+		/** Clean up element and restore to empty state **/
+		public function clean():void {
 			if(flash) {
 				if(contains(flash)) {
 					removeChild(flash);
 				}
 			}
 			
-			if(_ldr) {
-				if(contains(_ldr)) {
-					removeChild(_ldr);
-				}
-			}
+			flash	= null;
+		}
+		
+		/** Kill the object and clean from memory. **/
+		public override function kill():void {
+			clean();
 			
 			src		= null;
-			flash	= null;
 			_ldr	= null
+			domain	= null;
 			
 			removeLoader();
 			

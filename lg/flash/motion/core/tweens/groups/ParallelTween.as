@@ -25,8 +25,7 @@
  * THE SOFTWARE.
  * 
  */
-package lg.flash.motion.core.tweens.groups
-{
+package lg.flash.motion.core.tweens.groups {
 	import lg.flash.motion.core.ticker.ITicker;
 	import lg.flash.motion.core.tweens.AbstractTween;
 	import lg.flash.motion.core.tweens.IITween;
@@ -34,17 +33,14 @@ package lg.flash.motion.core.tweens.groups
 	import lg.flash.motion.tweens.ITween;
 	
 	/**
-	 * 複数の ITween を同時に実行.
-	 * 
+	 * Simultaneously run multiple ITween.
 	 * @author	yossy:beinteractive
 	 */
-	public class ParallelTween extends AbstractTween implements IITweenGroup
-	{
-		public function ParallelTween(targets:Array, ticker:ITicker, position:Number)
-		{
+	public class ParallelTween extends AbstractTween implements IITweenGroup {
+		public function ParallelTween(targets:Array, ticker:ITicker, position:Number) {
 			super(ticker, position);
 			
-			var l:uint = targets.length;
+			var l:int = targets.length;
 			
 			_duration = 0;
 			
@@ -62,7 +58,7 @@ package lg.flash.motion.core.tweens.groups
 							_duration = _d.duration > _duration ? _d.duration : _duration;
 							if (l > 4) {
 								_targets = new Vector.<IITween>(l - 4, true);
-								for (var i:uint = 4; i < l; ++i) {
+								for (var i:int = 4; i < l; ++i) {
 									var t:IITween = targets[i] as IITween;
 									_targets[i - 4] = t;
 									_duration = t.duration > _duration ? t.duration : _duration;
@@ -178,8 +174,8 @@ package lg.flash.motion.core.tweens.groups
 							_d.update(time);
 							if (_targets != null) {
 								var targets:Vector.<IITween> = _targets;
-								var l:uint = targets.length;
-								for (var i:uint = 0; i < l; ++i) {
+								var l:int = targets.length;
+								for (var i:int = 0; i < l; ++i) {
 									targets[i].update(time);
 								}
 							}
@@ -209,8 +205,8 @@ package lg.flash.motion.core.tweens.groups
 			}
 			if (_targets != null) {
 				var t:Vector.<IITween> = _targets;
-				var l:uint = t.length;
-				for (var i:uint = 0; i < l; ++i) {
+				var l:int = t.length;
+				for (var i:int = 0; i < l; ++i) {
 					targets.push(t[i].clone());
 				}
 			}
