@@ -259,6 +259,27 @@ package lg.flash.motion {
 			}
 		}
 		
+		/** Play tween in reverse. **/
+		public function reverse():void {
+			if(_parallel) {
+				Tweener.reverse(_parallel);
+			}
+		}
+		
+		/** Repeat a tween. **/
+		public function loop(times:int):void {
+			if(_parallel) {
+				Tweener.repeat(_parallel, times);
+			}
+		}
+		
+		/** Scale time duration for a tween. **/
+		public function timeScale(amount:Number):void {
+			if(_parallel) {
+				Tweener.scale(_parallel, amount);
+			}
+		}
+		
 		public function set bezier(obj:Object):void {
 			var t:ITween;
 			var to:Object		= (obj.to != undefined) ? obj.to as Object : null;
