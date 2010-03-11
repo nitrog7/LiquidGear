@@ -99,8 +99,6 @@ package lg.flash.elements {
 		public var autoPlay:Boolean			= false;
 		/** Remove and clean video after finished playing **/
 		public var autoClean:Boolean		= false;
-		/** Maintain aspect ratio when resizing. **/
-		public var aspectRatio:Boolean		= true;
 		/** Current frames per second being displayed. **/
 		public var fps:Number				= 0;
 		/** Video buffer. If 1, wait till video is fully buffered before playing. If .5, wait till half the video is loaded before playing.

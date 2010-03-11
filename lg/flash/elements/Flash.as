@@ -107,6 +107,7 @@ package lg.flash.elements {
 		 * @param src	URL to the SWF file.
 		 */		
 		public function load(src:String):void {
+			trace('Flash::load');
 			this.src	= src;
 			var req:URLRequest		= new URLRequest(basePath+src);
 			
@@ -143,9 +144,10 @@ package lg.flash.elements {
 			
 			if(obj is AVM1Movie) {
 				isAS3	= false;
+				flash	= _ldr;
+			} else {
+				flash	= obj;
 			}
-			
-			flash	= obj;
 		}
 		
 		/** Contains the loaded DisplayObject **/
@@ -154,17 +156,24 @@ package lg.flash.elements {
 			return obj;
 		}
 		public function set flash(value:DisplayObject):void {
-			data.flash	= value;
 			clean();
+			
+			if(!value) {
+				return;
+			}
+			
+			data.flash	= value;
 			addChild(value);
 			
 			//Set size to content if not already set
+			_layout.width	= 0;
 			if(data.width != undefined && data.width > 0) {
 				width	= data.width;
 			} else {
 				width	= value.width;
 			}
 			
+			_layout.height	= 0;
 			if(data.height != undefined && data.height > 0) {
 				height	= data.height;
 			} else {
@@ -205,6 +214,12 @@ package lg.flash.elements {
 				_ldr.contentLoaderInfo.removeEventListener(Event.COMPLETE, onLoaded);
 				_ldr.contentLoaderInfo.removeEventListener(ProgressEvent.PROGRESS, onProgress);
 				_ldr.contentLoaderInfo.removeEventListener(IOErrorEvent.IO_ERROR, onError);
+				
+				_ldr.unload();
+				
+				if(contains(_ldr)) {
+					removeChild(_ldr);
+				}
 			}
 			
 			_ldr	= null;
@@ -276,18 +291,16 @@ package lg.flash.elements {
 				}
 			}
 			
-			flash	= null;
+			data.flash	= null;
 		}
 		
 		/** Kill the object and clean from memory. **/
 		public override function kill():void {
 			clean();
+			removeLoader();
 			
 			src		= null;
-			_ldr	= null
 			domain	= null;
-			
-			removeLoader();
 			
 			super.kill();
 		}

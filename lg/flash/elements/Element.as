@@ -318,6 +318,10 @@ package lg.flash.elements {
 		*
 		*	@param element A DisplayObject to add as a child element. **/
 		public override function addChild(element:DisplayObject):DisplayObject {
+			if(!element) {
+				return null;
+			}
+			
 			var elName:String	= element.name;
 			elements[elName]	= element;
 			
