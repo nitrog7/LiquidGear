@@ -50,9 +50,7 @@ package lg.flash.view {
 	import lg.flash.events.PageEvent;
 	import lg.flash.model.xmlData;
 	import lg.flash.motion.Tween;
-	import lg.flash.motion.easing.Quartic;
 	import lg.flash.motion.easing.Quintic;
-	import lg.flash.motion.tweens.ITween;
 	import lg.flash.shell.Shell;
 	
 	public class Page extends Sprite {
@@ -352,7 +350,9 @@ package lg.flash.view {
 		}
 		
 		/** @private **/
-		private function onErrorXML(e:ModelEvent):void {			
+		private function onErrorXML(e:ModelEvent):void {
+			trace('ERROR: Loading page XML. ', e.data.url);
+			
 			//Cleanup
 			_pageData.removeEventListener(ModelEvent.LOADED, onLoadXML);
 			_pageData.removeEventListener(ModelEvent.ERROR, onErrorXML);

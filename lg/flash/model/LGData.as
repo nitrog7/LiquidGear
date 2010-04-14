@@ -47,6 +47,7 @@
 		
 		/** Load data from an XML file. **/
 		public function LGData() {
+			data.cleanURL	= '';
 		}
 		
 		/** Get data. 
@@ -192,6 +193,42 @@
 			if(lisIdx >=0) {
 				_listeners.splice(lisIdx, 1);
 			}
+		}
+		
+		public function getParams(url:String):Object {
+			var fullurl:String	= url;
+			var query:Array		= [];
+			var params:Object	= {};
+			
+			if(fullurl && fullurl != ''){
+				query	= fullurl.split('?');
+				
+				if(query.length > 1) {		
+					var varStr:String	= query[1];
+					var varsArray:Array	= varStr.split('&');
+					var qryLen:int		= varsArray.length;
+					data.cleanURL		= query[0];
+					
+					for (var g:int=0; g<qryLen; g++){
+						var index:int		= 0;
+						var kvPair:String	= varsArray[g];
+						
+						if((index = kvPair.indexOf('=')) > 0){
+							var key:String		= kvPair.substring(0,index);
+							var value:String	= kvPair.substring(index + 1);
+							params[key] = value;
+						}
+					}
+				} else {
+					data.cleanURL		= fullurl;
+				}
+			}
+			
+			return params;
+		}
+		
+		public function get cleanURL():String {
+			return data.cleanURL;
 		}
 		
 		/** Clear all events from an element **/

@@ -37,9 +37,12 @@ package lg.flash.elements {
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
+	import flash.events.TimerEvent;
 	import flash.net.URLRequest;
 	import flash.system.ApplicationDomain;
 	import flash.system.LoaderContext;
+	import flash.system.SecurityDomain;
+	import flash.utils.Timer;
 	
 	import lg.flash.events.ElementEvent;
 	
@@ -75,7 +78,7 @@ package lg.flash.elements {
 		public var domain:ApplicationDomain;
 		
 		/** @private **/
-		private var _ldr:Loader;
+		private var _loadProgress:Timer;
 		
 		/** 
 		*	Constructs a new Flash object
@@ -107,19 +110,47 @@ package lg.flash.elements {
 		 * @param src	URL to the SWF file.
 		 */		
 		public function load(src:String):void {
-			trace('Flash::load');
-			this.src	= src;
-			var req:URLRequest		= new URLRequest(basePath+src);
+			this.src			= src;
+			var req:URLRequest	= new URLRequest(basePath+src);
+			
+			//Load check timer
+			data._isLoaded	= false;
+			_loadProgress	= new Timer(1000, 1);
+			_loadProgress.addEventListener(TimerEvent.TIMER_COMPLETE, onCheckLoaded);
 			
 			var lc:LoaderContext	= new LoaderContext();
 			lc.checkPolicyFile		= true;
 			
-			_ldr = new Loader();
-			_ldr.contentLoaderInfo.addEventListener(Event.INIT, onInit);
-			_ldr.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoaded);
-			_ldr.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS, onProgress);
-			_ldr.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, onError);
-			_ldr.load(req, lc);
+			if(!isDevelopment) {
+				lc.securityDomain		= SecurityDomain.currentDomain;
+				lc.applicationDomain	= ApplicationDomain.currentDomain;
+			}
+			
+			var ldr:Loader = new Loader();
+			ldr.contentLoaderInfo.addEventListener('init', onInit);
+			ldr.contentLoaderInfo.addEventListener('complete', onLoaded);
+			ldr.contentLoaderInfo.addEventListener('progress', onProgress);
+			ldr.contentLoaderInfo.addEventListener('ioError', onError);
+			ldr.load(req, lc);
+		}
+		
+		protected override function onProgress(e:ProgressEvent):void {
+			trigger('element_progress', null, e);
+			
+			if(e.bytesLoaded == e.bytesTotal) {
+				_loadProgress.start();
+			}
+		}
+		
+		/** @private **/
+		private function onCheckLoaded(e:TimerEvent):void {
+			_loadProgress.stop();
+			_loadProgress.removeEventListener(TimerEvent.TIMER_COMPLETE, onCheckLoaded);
+			_loadProgress	= null;
+			
+			if(!isLoaded) {
+				trigger('element_error');
+			}
 		}
 		
 		/** @private **/
@@ -134,19 +165,24 @@ package lg.flash.elements {
 		
 		/** @private **/
 		private function onLoaded(e:Event):void {
-			var obj:DisplayObject	= _ldr.content as DisplayObject;
-			isAS3	= true;
-			
-			if(obj is MovieClip || obj is Sprite) {
-				var info:LoaderInfo	= _ldr.contentLoaderInfo;
-				domain	= info.applicationDomain;
-			}
-			
-			if(obj is AVM1Movie) {
-				isAS3	= false;
-				flash	= _ldr;
-			} else {
-				flash	= obj;
+			if(!isLoaded) {
+				data._isLoaded	= true;
+				
+				var info:LoaderInfo		= e.target as LoaderInfo;
+				var ldr:Loader			= info.loader;
+				var obj:DisplayObject	= info.content;
+				isAS3	= true;
+				
+				if(obj is MovieClip || obj is Sprite) {
+					domain	= info.applicationDomain;
+				}
+				
+				if(obj is AVM1Movie) {
+					isAS3	= false;
+					flash	= ldr;
+				} else {
+					flash	= obj;
+				}
 			}
 		}
 		
@@ -201,14 +237,15 @@ package lg.flash.elements {
 		
 		/** @private **/
 		private function onError(e:IOErrorEvent):void {
-			trigger('element_io_error', e);
+			trigger('element_error', e);
 			trace('IO Error: '+e.text);
 			
 			//Cleanup
-			removeLoader();
+			//removeLoader();
 		}
 		
 		/** @private **/
+		/*
 		private function removeLoader():void {
 			if(_ldr) {
 				_ldr.contentLoaderInfo.removeEventListener(Event.COMPLETE, onLoaded);
@@ -224,7 +261,7 @@ package lg.flash.elements {
 			
 			_ldr	= null;
 		}
-		
+		*/
 		/** Plays the MovieClip. **/
 		public function play():void {
 			var mc:MovieClip	= flash as MovieClip;
@@ -297,7 +334,7 @@ package lg.flash.elements {
 		/** Kill the object and clean from memory. **/
 		public override function kill():void {
 			clean();
-			removeLoader();
+			//removeLoader();
 			
 			src		= null;
 			domain	= null;

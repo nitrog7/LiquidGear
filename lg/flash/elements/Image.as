@@ -38,7 +38,9 @@ package lg.flash.elements {
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	import flash.net.URLRequest;
+	import flash.system.ApplicationDomain;
 	import flash.system.LoaderContext;
+	import flash.system.SecurityDomain;
 	
 	import lg.flash.events.ElementEvent;
 	
@@ -83,7 +85,7 @@ package lg.flash.elements {
 		*
 		*	@param src Relative path of image. **/
 		public function load(src:String):void {
-			data.isLoaded	= false;
+			data._isLoaded	= false;
 			
 			//Remove old
 			clean();
@@ -96,7 +98,12 @@ package lg.flash.elements {
 			
 			var lc:LoaderContext	= new LoaderContext();
 			lc.checkPolicyFile		= true;
-
+			
+			if(!isDevelopment) {
+				lc.securityDomain		= SecurityDomain.currentDomain;
+				lc.applicationDomain	= ApplicationDomain.currentDomain;
+			}
+			
 			ldr.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoaded);
 			ldr.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS, onProgress);
 			ldr.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, onError);
@@ -150,21 +157,18 @@ package lg.flash.elements {
 				}
 			}
 			
-			data.isLoaded	= true;
+			data._isLoaded	= true;
 			trigger('element_loaded');
 		}
 		
 		/** @private **/
 		private function onLoaded(e:Event):void {
-			var loadInfo:LoaderInfo	= e.target as LoaderInfo;
-			loadInfo.removeEventListener(Event.COMPLETE, onLoaded);
+			var info:LoaderInfo	= e.target as LoaderInfo;
 			
-			var ldr:Loader	= loadInfo.loader;
-			
-			if(ldr.content && ldr.content is Bitmap) {
-				image	= Bitmap(ldr.content);
+			if(info.content && info.content is Bitmap) {
+				image	= Bitmap(info.content);
 			}
-		}
+		} 
 		
 		/** @private **/
 		private function onError(e:IOErrorEvent):void {

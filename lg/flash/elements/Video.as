@@ -140,7 +140,7 @@ package lg.flash.elements {
 			data.isInit				= false;
 			data.isPaused			= false;
 			data.isFinished			= false;
-			data.isLoaded			= false;
+			data._isLoaded			= false;
 			data.volume				= 1;
 			data.loop				= false;
 			data.muted				= false;
@@ -207,7 +207,7 @@ package lg.flash.elements {
 			
 			this.src		= src;
 			data.isFinished = false;
-			data.isLoaded	= false;
+			data._isLoaded	= false;
 			data.stopVideo	= false;
 			
 			trace('Video::load', autoPlay);
@@ -220,7 +220,7 @@ package lg.flash.elements {
 			if(buffer > 0) {
 				_videoTimer.start();
 			} else {
-				data.isLoaded	= true;
+				data._isLoaded	= true;
 			}
 		}
 		
@@ -273,7 +273,7 @@ package lg.flash.elements {
         
 		/** @private **/
 		private function onLoaded():void {
-			data.isLoaded	= true;
+			data._isLoaded	= true;
 			trigger('element_loaded');
 		}
 		
@@ -309,7 +309,7 @@ package lg.flash.elements {
 					break;
 				case 'NetStream.Play.Start':
 					trace('NetStream.Play.Start', id);
-                	data.isLoaded	= true;
+                	data._isLoaded	= true;
 					break;
 				case 'NetStream.Play.Stop':
                 	if(isPlaying) {
@@ -419,7 +419,7 @@ package lg.flash.elements {
 		
 		/** @private **/
 		private function onWaitVideo(e:TimerEvent):void {
-			if(video.bytesTotal > 0 && (video.bytesLoaded/video.bytesTotal) >= buffer && !data.isLoaded) {
+			if(video.bytesTotal > 0 && (video.bytesLoaded/video.bytesTotal) >= buffer && !data._isLoaded) {
 				onLoaded();
 			}
 			
@@ -466,12 +466,12 @@ package lg.flash.elements {
 		
 		/** Play the video stream **/
 		public function play():void {
-			trace('Video::play', id, data.isLoaded, data.isPlaying);
+			trace('Video::play', id, data._isLoaded, data.isPlaying);
 			//if(video) {
-				if(data.isLoaded && !data.isPlaying) {
+				if(data._isLoaded && !data.isPlaying) {
 					data.isPlaying	= true;
 					trace('video load');
-					//data.isLoaded	= true;
+					//data._isLoaded	= true;
 					//video.play(src);
 					data.startVideo	= true;
 					data.stopVideo	= false;

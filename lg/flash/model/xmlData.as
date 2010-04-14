@@ -29,6 +29,7 @@
 
  package lg.flash.model {
 	//Flash Classes
+	import flash.external.ExternalInterface;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestMethod;
 	import flash.net.URLVariables;
@@ -96,16 +97,28 @@
 				isLoading = true;
 				
 				var req:URLRequest;
+				var url:String			= obj.url;
+				var params:URLVariables	= new URLVariables();
+				/*
+				if(url && url.indexOf('?') >= 0) {
+					var urlParams:Object	= getParams(url);
+					params					= new URLVariables();
+					url						= cleanURL;
+					
+					for(var s:String in urlParams) {
+						params[s]	= urlParams[s];
+					}
+				}
+				*/
 				obj.basePath	= ('basePath' in obj) ? obj.basePath : '';
 				
-				req				= new URLRequest(obj.basePath+obj.url);
+				req				= new URLRequest(obj.basePath+url);
 				
 				if(obj.bustCache) {
-					var params:URLVariables	= new URLVariables()
 					params['cache']	= randRange(1000,3000);
-					req.data		= params;
 				}
 				
+				req.data			= params;
 				req.method			= URLRequestMethod.GET;
 				req.contentType 	= "text/xml"; 
 				
@@ -138,7 +151,7 @@
 				var results:XML		= new XML(ldr.data.results);
 			}
 			catch(error:Error) {
-				trace('XML is malformed.', ldr.data.url);
+				trace('ERROR: XML is malformed.', ldr.data.url);
 				return;
 			}
 			
@@ -161,7 +174,7 @@
 			var ldr:FileLoader	= e.target as FileLoader;
 			var ldrId:String	= ldr.id;
 			
-			trace(e);
+			trace('ERROR: XML data from "'+ldr.id+'" was not found. Please make sure the file exists at: ', ldr.data.url);
 			
 			//Dispatch event
 			trigger('data_io_error', {id:ldrId}, e);

@@ -40,10 +40,10 @@ package lg.flash.elements {
 	import flash.events.ProgressEvent;
 	import flash.events.TimerEvent;
 	import flash.geom.Point;
+	import flash.system.Capabilities;
 	import flash.utils.Timer;
 	
 	import lg.flash.events.ElementEvent;
-	import lg.flash.utils.LGDebug;
 	
 	/**
 	* Dispatched when the element has been initialized.
@@ -209,7 +209,6 @@ package lg.flash.elements {
 		/** Debugger. Use console.on() to turn on the debugger, console.off() to turn it off.
 		* Once on, you can use trace commands to the <a href="http://demonsterdebugger.com/">De Monster Debugger</a> client with
 		* the commands, console.log(), console.warn(), and console.error(). **/
-		public var console:LGDebug;
 		
 		public static var debug:Boolean	= false;
 		
@@ -228,11 +227,18 @@ package lg.flash.elements {
 			mouseChildren	= false;
 			
 			data.id			= name;
-			data.isLoaded	= false;
+			data._isLoaded	= false;
 			data.stretch	= true;
 			
-			//Debugger
-			console	= new LGDebug(this);
+			switch(Capabilities.playerType) {
+				case 'External':
+				case 'StandAlone':
+					data._development	= true;
+					break;
+				default :
+					data._development	= false;
+					break;
+			}
 		}
 		
 		/** @private **/
@@ -279,7 +285,12 @@ package lg.flash.elements {
 		
 		/** Is set to true when an element is loaded **/
 		public function get isLoaded():Boolean {
-			return data.isLoaded;
+			return data._isLoaded;
+		}
+		
+		/** Is running in the debug mode. True if run in the Flash Player, false if run in the browser. **/
+		public function get isDevelopment():Boolean {
+			return data._development;
 		}
 		
 		/** Sets the attributes on the element if either an object with key/value
@@ -381,7 +392,7 @@ package lg.flash.elements {
 				var percent:int			= (_lmLoaded.length > 0) ? (_lmLoaded.length / _lmTotal.length) * 100 : 0;
 				
 				if(percent >= 100) {
-					data.isLoaded	= true;
+					data._isLoaded		= true;
 					trigger('element_loaded');
 				}
 			}
@@ -876,8 +887,8 @@ package lg.flash.elements {
 		}
 		/** @private **/
 		private function onError(e:IOErrorEvent):void {
+			trace('IO Error: For element, ' + id, e.text);
 			trigger('element_error', null, e);
-			trace('IO Error: '+e.text);
 		}
 		/** @private **/
 		protected function onProgress(e:ProgressEvent):void {
