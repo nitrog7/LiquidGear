@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2010 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -46,7 +46,6 @@ package lg.flash.motion {
 	*/
 	public class Tween extends ElementDispatcher {
 		public var target:Object		= 0;
-		public var duration:Number		= 0;
 		public var ease:IEasing;
 		public var autoPlay:Boolean		= true;
 		public var tween:ITween;
@@ -70,7 +69,7 @@ package lg.flash.motion {
 			
 			//Set defaults
 			data.target				= null;
-			data.duration			= 0;
+			data.duration			= 0.01;
 			data.delay				= 0;
 			data.ease				= null;
 			data.visible			= null;
@@ -82,6 +81,8 @@ package lg.flash.motion {
 			data.onStopParams		= null;
 			data.onUpdate			= null;
 			data.onUpdateParams		= null;
+			data.onComplete			= null;
+			data.onCompleteParams	= null;
 			
 			//Only get properties that are in the element
 			var tweenObj:Object		= {};
@@ -181,6 +182,17 @@ package lg.flash.motion {
 			if(autoPlay) {
 				play();
 			}
+		}
+		
+		public function set duration(value:Number):void {
+			if(value <= 0) {
+				data.duration	= 0.01;
+			} else {
+				data.duration	= value;
+			}
+		}
+		public function get duration():Number {
+			return data.duration;
 		}
 		
 		/** @private **/

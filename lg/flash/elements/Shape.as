@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2010 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -29,14 +29,14 @@
 
 package lg.flash.elements {
 	//Flash
-	import flash.display.Sprite;
 	import flash.display.BitmapData;
 	import flash.display.GradientType;
+	import flash.display.Graphics;
+	import flash.display.Sprite;
 	import flash.geom.Matrix;
 	
-	//LG
-	import lg.flash.events.ElementEvent;
 	import lg.flash.elements.VisualElement;
+	import lg.flash.events.ElementEvent;
 	
 	/**
 	*	<p>Creates a shape.</p>
@@ -129,6 +129,10 @@ package lg.flash.elements {
 			}
 			
 			_shape.graphics.endFill();
+		}
+		
+		public override function get graphics():Graphics {
+			return _shape.graphics;
 		}
 		
 		/** Fills a drawing area with a bitmap image. **/

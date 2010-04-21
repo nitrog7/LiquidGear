@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2010 Nitrogen Design, Inc. All rights reserved.
+* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -422,7 +422,7 @@ package lg.flash.view {
 		
 		/** @private **/
 		private function buildNext(obj:Object):void {
-			var attr:Object		= obj.attributes as Object;
+			//var attr:Object		= obj.attributes as Object;
 			var item:Object		= create(obj) as Object;
 			
 			if(item is Element) {
@@ -521,7 +521,7 @@ package lg.flash.view {
 					return newFlash;
 					break;
 				case 'text':
-					attr.content	= obj.value.toString();
+					attr.htmlText	= obj.value.toString();
 					attr.waitLoad	= false;
 					var newTxt:Text	= new Text(attr);
 					
@@ -837,14 +837,12 @@ package lg.flash.view {
 		}
 		
 		public function transitionIn():void {
-			trace('Page::transitionIn', id);
 			preloader.hide(.3);
 			animate({duration:.25, alpha:1, ease:Quintic.easeOut, onComplete:onTransIn});
 		}
 		
 		/** @private **/
 		private function onTransIn():void {
-			trace('Page::onTransIn', id);
 			start();
 			trigger('page_open');
 		}
