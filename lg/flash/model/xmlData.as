@@ -112,6 +112,10 @@
 				*/
 				obj.basePath	= ('basePath' in obj) ? obj.basePath : '';
 				
+				if(url && url.indexOf('://') >= 0) {
+					obj.basePath	= '';
+				}
+				
 				req				= new URLRequest(obj.basePath+url);
 				
 				if(obj.bustCache) {

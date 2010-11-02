@@ -183,8 +183,6 @@ package lg.flash.elements {
 	*	
 	**/
 	public class Element extends Sprite {
-		/** Title. **/
-		public var title:String			= '';
 		//public var lang:String			= '';
 		//public var dir:String			= '';
 		//public var className:String		= '';
@@ -272,6 +270,14 @@ package lg.flash.elements {
 					this[s] = obj[s];
 				}
 			}
+		}
+		
+		/** Title **/
+		public function set title(value:String):void {
+			data.title = value;
+		}
+		public function get title():String {
+			return data.title;
 		}
 		
 		/** Unique identifier for the object. **/

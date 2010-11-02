@@ -1,48 +1,17 @@
-﻿/*
- * BetweenAS3
- * 
- * Licensed under the MIT License
- * 
- * Copyright (c) 2009 BeInteractive! (www.be-interactive.org) and
- *                    Spark project  (www.libspark.org)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-package lg.flash.motion.easing
-{
-	import lg.flash.motion.core.easing.IEasing;
-	import lg.flash.motion.core.easing.QuinticEaseIn;
-	import lg.flash.motion.core.easing.QuinticEaseInOut;
-	import lg.flash.motion.core.easing.QuinticEaseOut;
-	import lg.flash.motion.core.easing.QuinticEaseOutIn;
+package lg.flash.motion.easing {
 	
-	/**
-	 * Quintic.
-	 * 
-	 * @author	yossy:beinteractive
-	 */
-	public class Quint
-	{
-		public static const easeIn:IEasing = new QuinticEaseIn();
-		public static const easeOut:IEasing = new QuinticEaseOut();
-		public static const easeInOut:IEasing = new QuinticEaseInOut();
-		public static const easeOutIn:IEasing = new QuinticEaseOutIn();
+	public class Quint {
+		public static const power:uint = 4;
+		
+		public static function easeIn (t:Number, b:Number, c:Number, d:Number):Number {
+			return c*(t/=d)*t*t*t*t + b;
+		}
+		public static function easeOut (t:Number, b:Number, c:Number, d:Number):Number {
+			return c*((t=t/d-1)*t*t*t*t + 1) + b;
+		}
+		public static function easeInOut (t:Number, b:Number, c:Number, d:Number):Number {
+			if ((t/=d*0.5) < 1) return c*0.5*t*t*t*t*t + b;
+			return c*0.5*((t-=2)*t*t*t*t + 2) + b;
+		}
 	}
 }

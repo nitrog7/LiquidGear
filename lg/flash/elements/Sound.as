@@ -28,13 +28,14 @@
 **/
 
 package lg.flash.elements {
-	import flash.net.URLRequest;
 	import flash.events.Event;
-	import flash.events.ProgressEvent;
 	import flash.events.IOErrorEvent;
+	import flash.events.ProgressEvent;
+	import flash.media.ID3Info;
 	import flash.media.Sound;
 	import flash.media.SoundChannel;
 	import flash.media.SoundTransform;
+	import flash.net.URLRequest;
 	
 	import lg.flash.events.ElementEvent;
 	
@@ -78,6 +79,22 @@ package lg.flash.elements {
 		public var sound:flash.media.Sound;
 		/** Reference to the SoundChannel. **/
 		public var channel:SoundChannel;
+		
+		//ID3
+		/** Album name (ID3 tag). **/
+		public var album:String		= '';
+		/** Artist (ID3 tag). **/
+		public var artist:String	= '';
+		/** Comment (ID3 tag). **/
+		public var comment:String	= '';
+		/** Genre (ID3 tag). **/
+		public var genre:String		= '';
+		/** Song name (ID3 tag). **/
+		public var songName:String	= '';
+		/** Track name (ID3 tag). **/
+		public var track:String		= '';
+		/** Song year (ID3 tag). **/
+		public var year:String		= '';
 		
 		/** @private **/
 		private var _isPaused:Boolean	= false;
@@ -128,6 +145,7 @@ package lg.flash.elements {
 			sound.addEventListener(Event.COMPLETE, onLoaded);
 			sound.addEventListener(ProgressEvent.PROGRESS, onProgress);
 			sound.addEventListener(IOErrorEvent.IO_ERROR, onError);
+			sound.addEventListener(Event.ID3, onID3);
 			sound.load(req);
 		}
 		
@@ -154,6 +172,22 @@ package lg.flash.elements {
 			sound.removeEventListener(ProgressEvent.PROGRESS, onProgress);
 			sound.removeEventListener(IOErrorEvent.IO_ERROR, onError);
 			sound	= null;
+		}
+		
+		/** @private **/
+		private function onID3(e:Event):void {
+			sound.removeEventListener(Event.ID3, onID3);
+			
+			var info:ID3Info	= sound.id3;
+			album		= info.album;
+			artist		= info.artist;
+			comment		= info.comment;
+			genre		= info.genre;
+			songName	= info.songName;
+			track		= info.track;
+			year		= info.year;
+			
+			trigger('element_update', e);
 		}
 		
 		/** Play the sound. **/

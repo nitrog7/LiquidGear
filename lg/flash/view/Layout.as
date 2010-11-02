@@ -40,8 +40,9 @@ package lg.flash.view {
 		*	Constructs a new Layout object
 		*	@param obj Object containing all properties to construct the Layout class	
 		**/
-		public function Layout(obj:Object) {
+		public function Layout(obj:Object=null) {
 			super();
+			holder();
 			
 			//Set Defaults
 			data.top			= null;
@@ -190,7 +191,7 @@ package lg.flash.view {
 		
 		/** Top position of the layout container.
 		*	@default null **/
-		public override function set top(value:*):void {
+		public override function set top(value:Number):void {
 			super.top	= value;
 			
 			if(data.bottom != null) {
@@ -200,7 +201,7 @@ package lg.flash.view {
 		
 		/** Bottom position of the layout container.
 		*	@default null **/
-		public override function set bottom(value:*):void {
+		public override function set bottom(value:Number):void {
 			super.bottom	= value;
 			
 			if(data.top != null) {
@@ -210,15 +211,16 @@ package lg.flash.view {
 		
 		/** Left position of the layout container.
 		*	@default null **/
-		public override function set left(value:*):void {
+		public override function set left(value:Number):void {
 			super.left	= value;
 			updateChildren();
 		}
 		
 		/** Right position of the layout container.
 		*	@default null **/
-		public override function set right(value:*):void {
+		public override function set right(value:Number):void {
 			super.right	= value;
+			trace('Layout::right', id, value);
 			updateChildren();
 		}
 		
@@ -232,17 +234,13 @@ package lg.flash.view {
 		
 		/** Indicates the width of the display object, in pixels. **/
 		public override function get width():Number {
-			var padVal:Number	= data.paddingLeft + data.paddingRight;
-			var w:Number		= data.width + padVal;
-			
+			var w:Number	= data.width + data.paddingLeft + data.paddingRight;
 			return w;
 		}
 		
 		/** Indicates the height of the display object, in pixels. **/
 		public override function get height():Number {
-			var padVal:Number	= data.paddingTop + data.paddingBottom;
-			var h:Number		= data.height + padVal;
-			
+			var h:Number	= data.height + data.paddingTop + data.paddingBottom;
 			return h;
 		}
 		
@@ -279,7 +277,7 @@ package lg.flash.view {
 					itemHeight	= item.paddingTop + item.height + item.paddingBottom;
 				}
 				
-				if(vertical) {
+				if(!vertical) {
 					//Make sure item does not exceed the total height
 					if((curHeight+itemHeight) > data.height) {
 						xPos		+= largest;
@@ -332,7 +330,8 @@ package lg.flash.view {
 		
 		/** Update the elements properties. Also called when the stage has been resized. **/
 		public override function update(obj:Object=null):void {
-			super.update();
+			trace('Layout::update', id, width, height, x, y);
+			super.update(obj);
 			updateChildren();
 		}
 	}

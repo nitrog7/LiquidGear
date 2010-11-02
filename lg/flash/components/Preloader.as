@@ -111,11 +111,13 @@ package lg.flash.components {
 		}
 		
 		public function start():void {
+			visible	= true;
 			_updateTimer.start();
 		}
 		
 		public function stop():void {
 			_updateTimer.stop();
+			visible	= false;
 		}
 		
 		public function setPercent(value:Number):void {

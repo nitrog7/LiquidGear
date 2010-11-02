@@ -50,12 +50,11 @@ package lg.flash.view {
 	import lg.flash.events.PageEvent;
 	import lg.flash.model.xmlData;
 	import lg.flash.motion.Tween;
-	import lg.flash.motion.easing.Quintic;
+	import lg.flash.motion.easing.Quint;
 	import lg.flash.shell.Shell;
 	
 	public class Page extends Sprite {
 		//Public Vars
-		public var id:String			= '';
 		public var basePath:String		= '';
 		public var src:String			= '';
 		public var data:Object			= {};
@@ -66,6 +65,7 @@ package lg.flash.view {
 		public var flashVars:Object		= {};
 		public var groups:Object		= {};
 		public var percent:int			= 0;
+		public var isInit:Boolean		= false;
 		public var isSetup:Boolean		= false;
 		public var isOpen:Boolean		= false;
 		public var isFocus:Boolean		= false;
@@ -104,6 +104,8 @@ package lg.flash.view {
 			mouseChildren	= true;
 			useHandCursor	= false;
 			
+			data.id			= '';
+			
 			if(obj) {
 				if(obj.width && obj.height) {
 					graphics.clear();
@@ -135,6 +137,18 @@ package lg.flash.view {
 			addEventListener('mouseOut', onMouseOut, false, 0, true);
 			addEventListener('mouseOver', onMouseOver, false, 0, true);
 			addEventListener('mouseUp', onMouseUp, false, 0, true);
+		}
+		
+		public function get id():String {
+			var value:String	= (data.id && data.id == '') ? name : data.id;
+			return data.id;
+		}
+		public function set id(value:String):void {
+			data.id	= value;
+			
+			if(value) { 
+				name = value;
+			}
 		}
 		
 		public function get autoSize():Boolean {
@@ -354,8 +368,8 @@ package lg.flash.view {
 			trace('ERROR: Loading page XML. ', e.data.url);
 			
 			//Cleanup
-			_pageData.removeEventListener(ModelEvent.LOADED, onLoadXML);
-			_pageData.removeEventListener(ModelEvent.ERROR, onErrorXML);
+			_pageData.unbind(ModelEvent.LOADED, onLoadXML);
+			_pageData.unbind(ModelEvent.ERROR, onErrorXML);
 			_pageData	= null;
 			nextQueue();
 		}
@@ -614,7 +628,7 @@ package lg.flash.view {
 					//Setup blank VisualElement
 					attr.waitLoad				= false;
 					var newVisual:VisualElement	= new VisualElement(attr);
-							
+					
 					for(g=0; g<numInner; g++) {
 						if(!(innerItems[g] is String)) {
 							dspObj	= create(innerItems[g], elementId) as Element;
@@ -630,6 +644,27 @@ package lg.flash.view {
 					}
 					
 					return newVisual;
+					break;
+				case 'layout':
+					//Setup blank Layout
+					attr.waitLoad			= false;
+					var newLayout:Layout	= new Layout(attr);
+					
+					for(g=0; g<numInner; g++) {
+						if(!(innerItems[g] is String)) {
+							dspObj	= create(innerItems[g], elementId) as Element;
+							
+							if(dspObj) {
+								newLayout.addChild(dspObj);
+							}
+						}
+					}
+					
+					if(isTop && elementId) {
+						elements[elementId]	= newLayout;
+					}
+					
+					return newLayout;
 					break;
 				case 'container':
 					attr.waitLoad			= false;
@@ -838,7 +873,7 @@ package lg.flash.view {
 		
 		public function transitionIn():void {
 			preloader.hide(.3);
-			animate({duration:.25, alpha:1, ease:Quintic.easeOut, onComplete:onTransIn});
+			animate({duration:.25, alpha:1, ease:Quint.easeOut, onComplete:onTransIn});
 		}
 		
 		/** @private **/
@@ -857,13 +892,13 @@ package lg.flash.view {
 		}
 		
 		public function transitionOut():void {
-			animate({duration:.15, alpha:0, ease:Quintic.easeIn, onComplete:onTransOut});
+			animate({duration:.15, alpha:0, ease:Quint.easeIn, onComplete:onTransOut});
 		}
 		
 		/** @private **/
 		private function onTransOut():void {
-			trigger('page_close');
 			stop();
+			trigger('page_close');
 		}
 		
 		/** Call to notify the page is finished loading. **/

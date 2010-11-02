@@ -59,7 +59,7 @@ package lg.flash.elements {
 		*	Constructs a new Image object
 		*	@param obj Object containing all properties to construct the class	
 		**/
-		public function Image(obj:Object) {
+		public function Image(obj:Object=null) {
 			super();
 			
 			//Set Defaults
@@ -92,7 +92,13 @@ package lg.flash.elements {
 			
 			//Add new image
 			data.src				= src;
-			var req:URLRequest		= new URLRequest(basePath+src);
+			var fullPath:String		= basePath + src;
+			
+			if(src && src.indexOf('://') >= 0) {
+				fullPath	= src;
+			}
+			
+			var req:URLRequest		= new URLRequest(fullPath);
 			var ldr:Loader			= new Loader();
 			ldr.name				= id;
 			
@@ -159,6 +165,26 @@ package lg.flash.elements {
 			
 			data._isLoaded	= true;
 			trigger('element_loaded');
+		}
+		
+		public function get actualWidth():Number {
+			return image.width;
+		}
+		public function get actualHeight():Number {
+			return image.height;
+		}
+		
+		public function get resizedWidth():Number {
+			var minVal:Number	= (image.height > data.height) ? data.height : image.height;
+			var maxVal:Number	= (data.height > image.height) ? data.height : image.height;
+			var value:Number	= image.width * (minVal / maxVal);
+			return value;
+		}
+		public function get resizedHeight():Number {
+			var minVal:Number	= (image.width > data.width) ? data.width : image.width;
+			var maxVal:Number	= (data.width > image.width) ? data.width : image.width;
+			var value:Number	= image.height * (minVal / maxVal);
+			return value;
 		}
 		
 		/** @private **/

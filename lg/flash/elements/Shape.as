@@ -57,21 +57,21 @@ package lg.flash.elements {
 			super();
 			
 			addChild(_shape);
-			cacheAsBitmap		= true;
+			cacheAsBitmap			= true;
 			
 			//Set defaults
-			data.x				= 0;
-			data.y				= 0;
-			data.color			= 0x000000;
-			data.shape			= 'rect';
-			data.radius			= 5;
-			data.fillAlpha		= 1;
-			data.width			= 50;
-			data.height			= 50;
-			data.stretch		= true;
-			data.colorAlpha		= 1;
-			data.gradientAlpha	= 1;
-			
+			data.x					= 0;
+			data.y					= 0;
+			data.color				= 0x000000;
+			data.shape				= 'rect';
+			data.radius				= 5;
+			data.fillAlpha			= 1;
+			data.width				= 50;
+			data.height				= 50;
+			data.stretch			= true;
+			data.colorAlpha			= 1;
+			data.gradientAlpha		= 1;
+			data.gradientRotation	= 90;
 			//Set Attributes
 			setAttributes(obj);
 			
@@ -104,10 +104,10 @@ package lg.flash.elements {
 				_shape.graphics.lineStyle(data.lineWidth, data.lineColor, data.lineAlpha, data.lineScale, data.lineCaps);
 			}
 			
-			if(data.gradientColor) {
+			if(data.gradientColor != undefined) {
 				_gradMatrix	= new Matrix();
-				_gradMatrix.createGradientBox(data.width, data.height, Math.PI/2, 0, 0);
-				
+				var radians:Number		= (data.gradientRotation/180) * Math.PI;
+				_gradMatrix.createGradientBox(data.width, data.height, radians, 0, 0);
 				_shape.graphics.beginGradientFill('linear', [data.color, data.gradientColor], [data.colorAlpha, data.gradientAlpha], [0, 255], _gradMatrix);
 			} else {
 				_shape.graphics.beginFill(data.color, data.fillAlpha);
@@ -309,6 +309,8 @@ package lg.flash.elements {
 		public override function set width(value:Number):void {
 			data.width		= value;
 			create();
+			
+			trigger('element_resize');
 		}
 		
 		/** Indicates the height of the display object, in pixels. 
@@ -319,6 +321,8 @@ package lg.flash.elements {
 		public override function set height(value:Number):void {
 			data.height		= value;
 			create();
+			
+			trigger('element_resize');
 		}
 		
 		/** Kill the object and clean from memory. **/

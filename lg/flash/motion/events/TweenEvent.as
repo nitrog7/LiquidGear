@@ -1,49 +1,30 @@
-﻿/*
- * BetweenAS3
- * 
- * Licensed under the MIT License
- * 
- * Copyright (c) 2009 BeInteractive! (www.be-interactive.org) and
- *                    Spark project  (www.libspark.org)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * 
- */
-package lg.flash.motion.events
-{
+﻿package lg.flash.motion.events {
 	import flash.events.Event;
-	
-	/**
-	 * ITween によって配信されるイベント.
-	 * 
-	 * @author	yossy:beinteractive
-	 */
-	public class TweenEvent extends Event
-	{
-		public static const PLAY:String = 'play';
-		public static const STOP:String = 'stop';
-		public static const UPDATE:String = 'update';
-		public static const COMPLETE:String = 'complete';
+/**
+ * Used for dispatching events from the GreenSock Tweening Platform. <br /><br />
+ * 	  
+ * <b>Copyright 2010, GreenSock. All rights reserved.</b> This work is subject to the terms in <a href="http://www.greensock.com/terms_of_use.html">http://www.greensock.com/terms_of_use.html</a> or for corporate Club GreenSock members, the software agreement that was issued with the corporate membership.
+ * 
+ * @author Jack Doyle, jack@greensock.com
+ */
+	public class TweenEvent extends Event {
+		/** @private **/
+		public static const VERSION:Number = 1.1;
+		public static const START:String = "start";
+		public static const UPDATE:String = "change";
+		public static const COMPLETE:String = "complete";
+		public static const REVERSE_COMPLETE:String = "reverseComplete";
+		public static const REPEAT:String = "repeat";
+		public static const INIT:String = "init";
 		
-		public function TweenEvent(type:String, bubbles:Boolean = false, cancelable:Boolean = false)
-		{
+		public function TweenEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false) {
 			super(type, bubbles, cancelable);
 		}
+		
+		public override function clone():Event {
+			return new TweenEvent(this.type, this.bubbles, this.cancelable);
+		}
+	
 	}
+	
 }

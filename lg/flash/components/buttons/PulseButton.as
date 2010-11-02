@@ -30,8 +30,6 @@
 package lg.flash.components.buttons {
 	//Flash Classes
 	import flash.geom.Rectangle;
-	import fl.motion.easing.Back;
-	import fl.motion.easing.Elastic;
 	
 	//LG Classes
 	import lg.flash.events.ElementEvent;
@@ -62,9 +60,9 @@ package lg.flash.components.buttons {
 			button();
 			
 			//Set Defaults
-			data.content			= 'Pulse Button';
+			data.title				= 'Pulse Button';
 			data.font				= '_sans';
-			data.embedFonts			= true;
+			data.embedFonts			= false;
 			data.size				= 14;
 			data.textX				= 24;
 			data.textY				= 0;
@@ -101,7 +99,7 @@ package lg.flash.components.buttons {
 			_labelBg.width		= 30;
 			
 			//Label
-			_label	= new Text({id:'label', x:data.textX, color:data.textColor, size:data.size, font:data.font, embedFonts:data.embedFonts, wordWrap:false, text:data.label});
+			_label	= new Text({id:'label', x:data.textX, color:data.textColor, size:data.size, font:data.font, embedFonts:data.embedFonts, text:data.title});
 			addChild(_label);
 			
 			//Listeners
@@ -189,7 +187,7 @@ package lg.flash.components.buttons {
 			_labelMask.graphics.beginFill(0x000000, 1);
 			_labelMask.graphics.drawRect(0, 0, _label.width, _label.height);
 			_labelMask.graphics.endFill();
-			_labelMask.width	= 0;
+			//_labelMask.width	= 0;
 			
 			if(data.invert) {
 				close();
@@ -207,7 +205,7 @@ package lg.flash.components.buttons {
 			_circle2.animate({duration:.4, alpha:0, x:-(data.buttonRadius*.5), y:-(data.buttonRadius*.5), width:data.buttonRadius, height:data.buttonRadius, ease:Quad.easeOut});
 			
 			_labelBg.animate({duration:.65, width:_label.width+65, ease:Back.easeOut});
-			_labelMask.animate({duration:.65, x:0, width:_label.width+15, alpha:1, ease:Back.easeOut});
+			_labelMask.animate({duration:.65, x:0, alpha:1, ease:Quad.easeOut});
 		}
 		
 		/** Show the close state **/
@@ -218,23 +216,23 @@ package lg.flash.components.buttons {
 			_circle2.animate({duration:1.1, alpha:1, x:-(data.innerRadius), y:-(data.innerRadius), width:data.innerRadius*2, height:data.innerRadius*2, ease:Elastic.easeOut});
 			
 			_labelBg.animate({duration:.2, width:30, delay:.2, ease:Quad.easeOut});
-			_labelMask.animate({duration:.2, x:0, width:0, alpha:0, ease:Quad.easeOut});
+			_labelMask.animate({duration:.2, x:-_label.width, alpha:0, ease:Quad.easeOut});
 		}
 		
-		public function set label(value:String):void {
+		public override function set title(value:String):void {
 			if(!_label) {
 				return;
 			}
 			
+			data.title		= value;
 			_label.htmlText	= value;
 			
 			if(data.isOpen && _labelBg && _labelMask) {
 				_labelBg.animate({duration:0, width:_label.width+65, ease:Back.easeOut});
 				_labelMask.animate({duration:0, x:0, width:_label.width+15, alpha:1, ease:Back.easeOut});
 			}
-		}
-		public function get label():String {
-			return data.label;
+			
+			updateButton();
 		}
 		
 		//Toggle selected
@@ -409,15 +407,6 @@ package lg.flash.components.buttons {
 			return data.textOverColor;
 		}
 		
-		/** Text rollover color **/
-		public function set content(value:String):void {
-			data.content = value;
-			updateButton();
-		}
-		public function get content():String {
-			return data.content;
-		}
-		
 		/** Selected text color **/
 		public function set selectedColor(value:uint):void {
 			data.selectedColor = value;
@@ -442,7 +431,7 @@ package lg.flash.components.buttons {
 		}
 		
 		/** @private **/
-		private function onHoverOver(e:ElementEvent) {
+		private function onHoverOver(e:ElementEvent):void {
 			close();
 			
 			if(!selected || !_toggle) {
@@ -451,7 +440,7 @@ package lg.flash.components.buttons {
 		}
 		
 		/** @private **/
-		private function onHoverOut(e:ElementEvent) {
+		private function onHoverOut(e:ElementEvent):void {
 			open();
 			
 			if(!selected || !_toggle) {
