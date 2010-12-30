@@ -45,7 +45,7 @@ package lg.flash.components {
 		private var _leafNodeItr:Number		= 1;
 		private var _updateTimer:Timer;
 		
-		public function Preloader(obj:Object) {
+		public function Preloader(obj:Object=null) {
 			super();
 			ghost();
 			

@@ -1,4 +1,5 @@
 ﻿package lg.flash.motion.easing {
+	
 	public class Strong {
 		public static const power:uint = 4;
 		

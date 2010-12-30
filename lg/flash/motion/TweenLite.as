@@ -1,6 +1,6 @@
 ﻿/**
- * VERSION: 11.36
- * DATE: 2010-04-27
+ * VERSION: 11.4
+ * DATE: 2010-11-12
  * AS3 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://www.TweenLite.com
  **/
@@ -48,9 +48,9 @@ package lg.flash.motion {
  * 
  * <hr />	
  * <b>SPECIAL PROPERTIES (no plugins required):</b>
- * <br /><br />
- * 
- * Any of the following special properties can optionally be passed in through the vars object (the third parameter):
+ * The following special properties can be defined in the <code>vars</code> parameter which can 
+ * be either a generic Object or a <code><a href="data/TweenLiteVars.html">TweenLiteVars</a></code> instance:
+ * <br />
  * 
  * <ul>
  * 	<li><b> delay : Number</b>			Amount of delay in seconds (or frames for frames-based tweens) before the tween should begin.</li>
@@ -122,7 +122,11 @@ package lg.flash.motion {
  * 											<li>PREEXISTING (5) (requires OverwriteManager)</li>
  * 
  * 										</ul></li>
- * 	</ul>		
+ * 	</ul>
+ * 
+ * <b>Note:</b> Using a <code><a href="data/TweenLiteVars.html">TweenLiteVars</a></code> instance 
+ * instead of a generic object to define your <code>vars</code> is a bit more verbose but provides 
+ * code hinting and improved debugging because it enforces strict data typing. Use whichever one you prefer.<br /><br />
  * 
  * <b>PLUGINS:</b><br /><br />
  * 
@@ -231,7 +235,7 @@ package lg.flash.motion {
 		}
 		
 		/** @private **/
-		public static const version:Number = 11.36;
+		public static const version:Number = 11.4;
 		/** @private When plugins are activated, the class is added (named based on the special property) to this object so that we can quickly look it up in the initTweenVals() method.**/
 		public static var plugins:Object = {}; 
 		/** @private **/
@@ -270,7 +274,7 @@ package lg.flash.motion {
 		/** @private Easing method to use which determines how the values animate over time. Examples are Elastic.easeOut and Strong.easeIn. Many are found in the fl.motion.easing package or lg.flash.motion.easing. **/
 		protected var _ease:Function;
 		/** @private 0 = NONE, 1 = ALL, 2 = AUTO 3 = CONCURRENT, 4 = ALL_AFTER **/
-		protected var _overwrite:uint;
+		protected var _overwrite:int;
 		/** @private When other tweens overwrite properties in this tween, the properties get added to this object. Remember, sometimes properties are overwritten BEFORE the tween inits, like when two tweens start at the same time, the later one overwrites the previous one. **/
 		protected var _overwrittenProps:Object; 
 		/** @private If this tween has any TweenPlugins, we set this to true - it helps speed things up in onComplete **/
@@ -288,6 +292,9 @@ package lg.flash.motion {
 		 */
 		public function TweenLite(target:Object, duration:Number, vars:Object) {
 			super(duration, vars);
+			if (target == null) {
+				throw new Error("Cannot tween a null object.");
+			}
 			this.target = target;
 			if (this.target is TweenCore && this.vars.timeScale) { //if timeScale is in the vars object and the target is a TweenCore, this tween's timeScale must be adjusted (in TweenCore's constructor, it was set to whatever the vars.timeScale was)
 				this.cachedTimeScale = 1;
@@ -627,7 +634,7 @@ package lg.flash.motion {
 		 */
 		 protected static function updateAll(e:Event = null):void {
 			rootTimeline.renderTime(((getTimer() * 0.001) - rootTimeline.cachedStartTime) * rootTimeline.cachedTimeScale, false, false);
-			rootFrame++;
+			rootFrame += 1;
 			rootFramesTimeline.renderTime((rootFrame - rootFramesTimeline.cachedStartTime) * rootFramesTimeline.cachedTimeScale, false, false);
 			
 			if (!(rootFrame % 60)) { //garbage collect every 60 frames...

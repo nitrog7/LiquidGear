@@ -349,6 +349,26 @@ package lg.flash.utils {
 		}
 		
 		/**
+		 Converts seconds to string format. Detail level: hours = 2, minutes = 1, seconds = 0.
+		 
+		 @param time: The number of days.
+		 @param detailLevel: The number of days.
+		 @return Returns the number of hours.
+		 */
+		public static function formatTime(time:Number, detailLevel:int=2):String {
+			var intTime:int = Math.floor(time);
+			var hours:int = Math.floor(intTime/ 3600);
+			var minutes:int = (intTime - (hours*3600))/60;
+			var seconds:int = intTime -  (hours*3600) - (minutes * 60);
+			
+			var hourString:String = detailLevel == 2 ? hours + ':':'';
+			var minuteString:String = detailLevel >= 1 ? ((detailLevel == 2 && minutes <10 ? '0':'') + minutes + ':'):'';
+			var secondString:String = ((seconds < 10 && (detailLevel >= 1)) ? '0':'') + seconds;
+			
+			return hourString + minuteString + secondString;
+		}
+		
+		/**
 			Converts degrees to radians.
 			
 			@param degrees: The number of degrees.

@@ -31,20 +31,22 @@ package lg.flash.model.google {
 	//Flash Classes
 	import flash.net.URLRequest;
 	
-	//LG Classes
 	import lg.flash.events.ModelEvent;
 	import lg.flash.model.LGData;
-	import lg.flash.model.xmlData;
+	import lg.flash.model.google.yt.YouTubeComment;
 	import lg.flash.model.google.yt.YouTubeEntry;
 	import lg.flash.model.google.yt.YouTubePlaylist;
 	import lg.flash.model.google.yt.YouTubeVideo;
-	import lg.flash.utils.LGString;
+	import lg.flash.model.xmlData;
 	import lg.flash.utils.LGDate;
+	import lg.flash.utils.LGString;
+	import lg.flash.utils.LGjson;
 	
 	public class YouTubeData extends LGData {
 		public var list:Array		= [];
 		public var playlists:YouTubePlaylist	= new YouTubePlaylist();
 		public var videos:Object	= {};
+		public var safeSearch:String	= 'none'; 
 		
 		private var _ytData:xmlData		= new xmlData();
 		private var _startData:int		= 1;
@@ -59,17 +61,31 @@ package lg.flash.model.google {
 		private var yt:Namespace		= new Namespace("http://gdata.youtube.com/schemas/2007");
 		
 		private var _dataURL:String		= 'http://gdata.youtube.com/feeds/api/users/';
-		private var _vidURL:String		= 'http://gdata.youtube.com/feeds/api/videos/';
+		private var _vidURL:String		= 'http://gdata.youtube.com/feeds/api/videos';
 		private var _plURL:String		= 'http://gdata.youtube.com/feeds/api/playlists/';
 		
 		public function YouTubeData() {
 		}
 		
 		public function getVideoByID(id:String):void {
-			var vidURL:String	= _vidURL + id + '?v=2';
+			var vidURL:String	= _vidURL + '/' + id + '?v=2';
 			
 			_ytData.load({id:'video', url:vidURL});
 			_ytData.loaded(onLoadVideoURL);
+		}
+		
+		public function getVideoByKeyword(keywords:String, start:int=1, max:int=50):void {
+			var url:String	= _vidURL+'?q='+escape(keywords)+'&start-index='+start+'&max-results='+ max + '&v=2&alt=json&format=5&safeSearch='+safeSearch;
+			
+			_ytData.load({id:'search', url:url});
+			_ytData.loaded(onLoadVideoList);
+		}
+		
+		public function getComments(id:String):void {
+			var url:String	= _vidURL+'/'+id+'/comments?v=2&alt=json';
+			
+			_ytData.load({id:'comments', url:url});
+			_ytData.loaded(onLoadComments);
 		}
 		
 		public function getVideos():Array {
@@ -331,7 +347,7 @@ package lg.flash.model.google {
 			_plID	= plID;
 			var playlistURL:String	= _plURL+_plID+'?v=2';
 			
-			_ytData.loaded(onLoadVideoList);
+			_ytData.loaded(onLoadVideoPlayList);
 			_ytData.load({id:'playlist', url:playlistURL + '&alt=json&max-results=' + _maxData + '&start-index=' + start});
 		}
 		
@@ -342,7 +358,7 @@ package lg.flash.model.google {
 			var playData:Object	= e.data.data.feed;
 			var lists:Array		= playData.entry;
 			var entry:YouTubeEntry;
-			_ytData.loaded(onLoadVideoList);
+			_ytData.loaded(onLoadVideoPlayList);
 			
 			for(var g:int=0; g<lists.length; g++) {
 				//entry	= createVideoEntry(lists[g]);
@@ -354,6 +370,50 @@ package lg.flash.model.google {
 			//Clean
 			_ytData.unbind('data_loaded', onLoadVideoList);
 			
+			var vidData:Object	= LGjson.decode(e.data.data);
+			var entry:Array		= vidData.feed.entry as Array;
+			var listLen:int		= entry.length;
+			var g:int;
+			var vid:YouTubeVideo;
+			var list:Array		= [];
+			var total:int		= vidData.feed['openSearch$totalResults']['$t'];
+			
+			for(g=0; g<listLen; g++) {
+				vid		= new YouTubeVideo(entry[g]);
+				list[g]	= vid;
+			}
+			
+			var event:ModelEvent	= new ModelEvent('data_loaded');
+			event.data				= {list:list, total:total};
+			dispatchEvent(event);
+		}
+		
+		private function onLoadComments(e:ModelEvent):void {
+			//Clean
+			_ytData.unbind('data_loaded', onLoadComments);
+			
+			var vidData:Object	= LGjson.decode(e.data.data);
+			var entry:Array		= vidData.feed.entry as Array;
+			var listLen:int		= entry.length;
+			var g:int;
+			var comment:YouTubeComment;
+			var list:Array		= [];
+			var total:int		= vidData.feed['openSearch$totalResults']['$t'];
+			
+			for(g=0; g<listLen; g++) {
+				comment	= new YouTubeComment(entry[g]);
+				list[g]	= comment;
+			}
+			
+			var event:ModelEvent	= new ModelEvent('data_loaded');
+			event.data				= {list:list, total:total};
+			dispatchEvent(event);
+		}
+		
+		private function onLoadVideoPlayList(e:ModelEvent):void {
+			//Clean
+			_ytData.unbind('data_loaded', onLoadVideoPlayList);
+			
 			var vidData:Object	= e.data.data.feed;
 			var lists:Array		= vidData.entry as Array;
 			var playlistID:int	= e.data.id.split('_')[1];
@@ -362,7 +422,7 @@ package lg.flash.model.google {
 			//TODO: fill in rest of playlist data
 			if(playlists.entry.length == 0) {
 				var entry:YouTubeEntry = new YouTubeEntry();
-				_ytData.loaded(onLoadVideoList);
+				_ytData.loaded(onLoadVideoPlayList);
 				
 				if(vidData.author && vidData.author.length > 0) {
 					entry.author	= vidData.author[0].name;

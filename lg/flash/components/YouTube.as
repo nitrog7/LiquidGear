@@ -32,7 +32,15 @@ package lg.flash.components {
 	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
+	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
+	import flash.system.ApplicationDomain;
+	import flash.system.Capabilities;
+	import flash.system.LoaderContext;
+	import flash.system.Security;
+	import flash.system.SecurityDomain;
+	import flash.utils.ByteArray;
 	
 	import lg.flash.elements.Image;
 	import lg.flash.elements.Shape;
@@ -85,9 +93,7 @@ package lg.flash.components {
 		/** @private **/
 		private var _ytLoader:Loader;
 		/** @private **/
-		private var _ytMask:Shape;
-		/** @private **/
-		private var _ytData:YouTubeData	= new YouTubeData();
+		private var _playerURL:String	= 'http://www.youtube.com/apiplayer?version=3';
 		
 		public function YouTube(obj:Object):void {
 			obj.type		= 'youtube';
@@ -96,28 +102,48 @@ package lg.flash.components {
 			obj.src			= (obj.src != undefined) ? obj.src : '';
 			obj.start		= (obj.start != undefined) ? obj.start : 0;
 			obj.trim		= (obj.trim != undefined) ? obj.trim : 0;
+			obj.quality		= (obj.quality != undefined) ? obj.quality : 'default';
 			
 			super(obj);
+			holder();
 			
 			data.state		= -2;
-			data.isReady	= false;
-			data.isPaused	= false;
+			data._isReady	= false;
+			data._isPaused	= false;
 			
-			//Mask
-			_ytMask			= new Shape({id:'ytMask', x:data.trim, y:data.trim, width:data.width - (data.trim * 2), height:data.height - (data.trim * 2)});
-			addChild(_ytMask);
+			var req:URLRequest	= new URLRequest(_playerURL);
 			
-			_ytData.loaded(onLoadedData);
-			
-			_ytLoader		= new Loader();
-			_ytLoader.contentLoaderInfo.addEventListener(Event.INIT, onInitLoader);
-			_ytLoader.load(new URLRequest('http://www.youtube.com/apiplayer?version=3'));
-			
+			if(Capabilities.playerType != 'Desktop') {
+				Security.allowDomain('www.youtube.com');
+			}	
+				_ytLoader	= new Loader();
+				_ytLoader.contentLoaderInfo.addEventListener(Event.INIT, onInitLoader);
+				_ytLoader.load(req);
+			/*} else {
+				var ldr:URLLoader	= new URLLoader();
+				ldr.addEventListener(Event.COMPLETE, onLoadSWF);
+				ldr.load(req);
+			}
+			*/
 			resetSize();
 		}
-		
+		/*
+		private function onLoadSWF(e:Event):void {
+			var ldr:URLLoader			= e.target as URLLoader;
+			var bytes:ByteArray			= ldr.data;
+			var context:LoaderContext	= new LoaderContext(false, this.loaderInfo.applicationDomain);
+			context.allowLoadBytesCodeExecution	= true;
+			context.applicationDomain	= this.loaderInfo.applicationDomain;
+			
+			_ytLoader	= new Loader();
+			_ytLoader.contentLoaderInfo.addEventListener(Event.INIT, onInitLoader);
+			_ytLoader.loadBytes(bytes, context);
+		}
+		*/
 		private function onInitLoader(e:Event):void {
+			trace('YouTube::onInitLoader');
 			addChild(_ytLoader);
+			
 			_ytLoader.content.addEventListener('onReady', onPlayerReady);
 			_ytLoader.content.addEventListener('onError', onPlayerError);
 			_ytLoader.content.addEventListener('onStateChange', onPlayerStateChange);
@@ -125,21 +151,22 @@ package lg.flash.components {
 		}
 
 		private function onPlayerReady(e:Event):void {
-			player 			= _ytLoader.content;
-			player.mask		= _ytMask;
+			if(_ytLoader) {
+				player 	= _ytLoader.content;
+			}
 			
 			if(data.src != '') {
-				data.isReady	= true;
-				load(data.src, data.start);
+				data._isReady	= true;
+				load(data.src, data.start, data.quality);
 			}
 			else if(data.ytID != '') {
-				data.isReady	= false;
-				loadID(data.ytID, data.start);
+				data._isReady	= false;
+				loadID(data.ytID, data.start, data.quality);
 			}
 		}
 		
 		private function onLoadedData(e:ModelEvent):void {
-			data.isReady	= true;
+			data._isReady	= true;
 			
 			var results:Object	= e.data as Object;
 			info				= results.video as Object;
@@ -185,59 +212,55 @@ package lg.flash.components {
 			var playerObj:Object	= e as Object;
 			data.state				= playerObj.data;
 			
+			trace('YouTube::onPlayerStateChange', data.state);
 			switch(data.state) {
 				case -1:
 					data.stateDesc	= "Unstarted";
-					data.isPlaying	= false;
-					data.isStopped	= true;
-					data.isPaused	= true;
+					data._isPlaying	= false;
+					data._isStopped	= true;
+					data._isPaused	= true;
 					player.setSize(width, height);
 					
-					if(data.isReady) {
-						trigger('element_loaded');
-					}
+					trigger('element_loaded');
 					break;
 				case 0:
 					data.stateDesc	= "Stopped";
-					data.isPlaying	= false;
-					data.isStopped	= true;
+					data._isPlaying	= false;
+					data._isStopped	= true;
 					_updateTimer.stop();
 					trigger('element_stop');
 					break;
 				case 1:
 					data.stateDesc	= "Playing";
 					
-					if(!data.isPlaying) {
-						data.isPlaying	= true;
-						data.isPaused	= false;
-						data.isStopped	= false;
-						
-						//Hide thumbnail when playing
-						if(thumbnail) {
-							thumbnail.hide(.5);
-						}
+					if(!data._isPlaying) {
+						data._isPlaying	= true;
+						data._isPaused	= false;
+						data._isStopped	= false;
 						
 						_updateTimer.start();
 						trigger('element_play');
 					}
 					break;
 				case 2:
-					if(!data.isPaused) {
+					if(!data._isPaused) {
 						data.stateDesc = "Paused";
-						data.isPlaying	= false;
-						data.isPaused	= true;
+						data._isPlaying	= false;
+						data._isPaused	= true;
 						_updateTimer.stop();
 						trigger('element_pause');
 					}
 					break;
 				case 3:
 					data.stateDesc = "Buffering";
+					trigger('video_buffering');
 					break;
 				case 5:
 					data.stateDesc = "Queued";
-					data.isPlaying	= false;
-					data.isStopped	= true;
-					data.isPaused	= true;
+					data._isPlaying	= false;
+					data._isStopped	= true;
+					data._isPaused	= true;
+					trigger('video_queued');
 					break;
 				default:
 					data.stateDesc = "No state reported yet";
@@ -260,9 +283,9 @@ package lg.flash.components {
 		public override function load(url:String, seconds:Number=0, quality:String='default', forceLoad:Boolean=false):void {
 			if(player) {
 				if (autoPlay || forceLoad) {
-					player.loadVideoByUrl(data.src, data.start, quality);
+					player.loadVideoByUrl(data.src, data.start, data.quality);
 				} else {
-					player.cueVideoByUrl(data.src, data.start, quality);
+					player.cueVideoByUrl(data.src, data.start, data.quality);
 				}
 			}
 		}
@@ -275,16 +298,10 @@ package lg.flash.components {
 		 */
 		public function loadID(id:String, seconds:Number=0, quality:String='default', forceLoad:Boolean=false):void {
 			if(player) {
-				if(_ytData.videos[id] == undefined) {
-					_ytData.getVideoByID(id);
-				} else {
-					data.isReady	= true;
-				}
-				
 				if(autoPlay || forceLoad) {
-					player.loadVideoById(id, seconds, quality);
+					player.loadVideoById(id, seconds, data.quality);
 				} else {
-					player.cueVideoById(id, seconds, quality);
+					player.cueVideoById(data.ytID, seconds, data.quality);
 				}
 			}
 		}
@@ -306,18 +323,18 @@ package lg.flash.components {
 		}
 		
 		public function set quality(value:String):void {
+			data.quality	= value;
+			
 			if(player) {
 				player.setPlaybackQuality(value);
 			}
 		}
 		public function get quality():String {
-			var value:String	= 'default';
-			
 			if(player) {
-				player.getPlaybackQuality();
+				data.quality	= player.getPlaybackQuality();
 			}
 			
-			return value;
+			return data.quality;
 		}
 		
 		/** Bytes loaded **/
@@ -388,7 +405,7 @@ package lg.flash.components {
 		
 		/** Video is ready to receive commands. **/
 		public function get isReady():Number {
-			return data.isReady;
+			return data._isReady;
 		}
 		
 		/** @private */
@@ -498,18 +515,6 @@ package lg.flash.components {
 		}
 		public override function get mute():Boolean {
 			return player.isMuted();
-		}
-		
-		public override function clean(reset:Boolean=true):void {
-			if(player) {
-				player.destroy();
-				
-				if(thumbnail) {
-					removeChild(thumbnail);
-					thumbnail.kill();
-					thumbnail	= null;
-				}
-			}
 		}
 		
 		public override function kill():void {

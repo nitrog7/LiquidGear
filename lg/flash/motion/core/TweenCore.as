@@ -1,8 +1,8 @@
 /**
- * VERSION: 1.361
- * DATE: 2010-04-28
- * ACTIONSCRIPT VERSION: 3.0 (AS2 version is also available)
- * UPDATES AND DOCUMENTATION AT: http://www.TweenLite.com
+ * VERSION: 1.4
+ * DATE: 2010-11-12
+ * AS3 (AS2 version is also available)
+ * UPDATES AND DOCS AT: http://www.greensock.com
  **/
 
 package lg.flash.motion.core {
@@ -17,7 +17,7 @@ package lg.flash.motion.core {
  */
 	public class TweenCore {
 		/** @private **/
-		public static const version:Number = 1.361;
+		public static const version:Number = 1.4;
 		
 		/** @private **/
 		protected static var _classInitted:Boolean;
@@ -28,8 +28,6 @@ package lg.flash.motion.core {
 		protected var _hasUpdate:Boolean;
 		/** @private Primarily used for zero-duration tweens to determine the direction/momentum of time which controls whether the starting or ending values should be rendered. For example, if a zero-duration tween renders and then its timeline reverses and goes back before the startTime, the zero-duration tween must render the starting values. Otherwise, if the render time is zero or later, it should always render the ending values. **/
 		protected var _rawPrevTime:Number = -1;
-		/** @private **/
-		protected var _pauseTime:Number;
 		
 		/** Stores variables (things like alpha, y or whatever we're tweening as well as special properties like "onComplete"). **/
 		public var vars:Object; 
@@ -53,12 +51,16 @@ package lg.flash.motion.core {
 		public var cachedTotalDuration:Number; 
 		/** @private timeScale allows you to slow down or speed up a tween/timeline. 1 = normal speed, 0.5 = half speed, 2 = double speed, etc. It is prefaced with "cached" because using a public property like this is faster than using the getter which is essentially a function call. If you want to update the value, you should always use the normal property, like myTween.timeScale = 2**/
 		public var cachedTimeScale:Number;
+		/** @private parent timeline's rawTime at which the tween/timeline was paused (so that we can place it at the appropriate time when it is unpaused). NaN when the tween/timeline isn't paused. **/
+		public var cachedPauseTime:Number;
 		/** @private Indicates whether or not the tween is reversed. **/ 
 		public var cachedReversed:Boolean;
 		/** @private Next TweenCore object in the linked list.**/
 		public var nextNode:TweenCore; 
 		/** @private Previous TweenCore object in the linked list**/
 		public var prevNode:TweenCore; 
+		/** @private When a TweenCore has been removed from its timeline, it is considered an orphan. When it it added to a timeline, it is no longer an orphan. We don't just set its "timeline" property to null because we need to always keep track of the timeline in case the TweenCore is enabled again by restart() or basically any operation that would cause it to become active again. "cachedGC" is different in that a TweenCore could be eligible for gc yet not removed from its timeline, like when a TimelineLite completes for example. **/
+		public var cachedOrphan:Boolean;
 		/** @private Indicates that the duration or totalDuration may need refreshing (like if a TimelineLite's child had a change in duration or startTime). This is another performance booster because if the cache isn't dirty, we can quickly read from the cachedDuration and/or cachedTotalDuration **/
 		public var cacheIsDirty:Boolean; 
 		/** @private Quicker way to read the paused property. It is public for speed purposes. When setting the paused state, always use the regular "paused" property.**/
@@ -68,6 +70,9 @@ package lg.flash.motion.core {
 		
 		public function TweenCore(duration:Number=0, vars:Object=null) {
 			this.vars = (vars != null) ? vars : {};
+			if (this.vars.isGSVars) {
+				this.vars = this.vars.vars;
+			}
 			this.cachedDuration = this.cachedTotalDuration = duration;
 			_delay = (this.vars.delay) ? Number(this.vars.delay) : 0;
 			this.cachedTimeScale = (this.vars.timeScale) ? Number(this.vars.timeScale) : 1;
@@ -171,7 +176,7 @@ package lg.flash.motion.core {
 				this.active = false;
 			}
 			if (!suppressEvents) {
-				if (this.vars.onComplete && this.cachedTotalTime == this.cachedTotalDuration && !this.cachedReversed) { //note: remember that tweens can have a duration of zero in which case their cachedTime and cachedDuration would always match.
+				if (this.vars.onComplete && this.cachedTotalTime >= this.cachedTotalDuration && !this.cachedReversed) { //note: remember that tweens can have a duration of zero in which case their cachedTime and cachedDuration would always match. Also, TimelineLite/Max instances with autoRemoveChildren may have a cachedTotalTime that exceeds cachedTotalDuration because the children were removed after the last render.
 					this.vars.onComplete.apply(null, this.vars.onCompleteParams);
 				} else if (this.cachedReversed && this.cachedTotalTime == 0 && this.vars.onReverseComplete) {
 					this.vars.onReverseComplete.apply(null, this.vars.onReverseCompleteParams);
@@ -204,18 +209,18 @@ package lg.flash.motion.core {
 		 * @return Boolean value indicating whether or not important properties may have changed when the TweenCore was enabled/disabled. For example, when a motionBlur (plugin) is disabled, it swaps out a BitmapData for the target and may alter the alpha. We need to know this in order to determine whether or not a new tween that is overwriting this one should be re-initted() with the changed properties. 
 		 **/
 		public function setEnabled(enabled:Boolean, ignoreTimeline:Boolean=false):Boolean {
+			this.gc = !enabled;
 			if (enabled) {
 				this.active = Boolean(!this.cachedPaused && this.cachedTotalTime > 0 && this.cachedTotalTime < this.cachedTotalDuration);
-				if (!ignoreTimeline && this.gc) {
+				if (!ignoreTimeline && this.cachedOrphan) {
 					this.timeline.addChild(this);
 				}
 			} else {
 				this.active = false;
-				if (!ignoreTimeline) {
+				if (!ignoreTimeline && !this.cachedOrphan) {
 					this.timeline.remove(this, true);
 				}
 			}
-			this.gc = !enabled;
 			return false;
 		}
 		
@@ -253,7 +258,7 @@ package lg.flash.motion.core {
 		 **/
 		protected function setTotalTime(time:Number, suppressEvents:Boolean=false):void {
 			if (this.timeline) {
-				var tlTime:Number = (_pauseTime || _pauseTime == 0) ? _pauseTime : this.timeline.cachedTotalTime;
+				var tlTime:Number = (this.cachedPauseTime || this.cachedPauseTime == 0) ? this.cachedPauseTime : this.timeline.cachedTotalTime;
 				if (this.cachedReversed) {
 					var dur:Number = (this.cacheIsDirty) ? this.totalDuration : this.cachedTotalDuration;
 					this.cachedStartTime = tlTime - ((dur - time) / this.cachedTimeScale);
@@ -384,10 +389,10 @@ package lg.flash.motion.core {
 		public function set paused(b:Boolean):void {
 			if (b != this.cachedPaused && this.timeline) {
 				if (b) {
-					_pauseTime = this.timeline.rawTime;
+					this.cachedPauseTime = this.timeline.rawTime;
 				} else {
-					this.cachedStartTime += this.timeline.rawTime - _pauseTime;
-					_pauseTime = NaN;
+					this.cachedStartTime += this.timeline.rawTime - this.cachedPauseTime;
+					this.cachedPauseTime = NaN;
 					setDirtyCache(false);
 				}
 				this.cachedPaused = b;

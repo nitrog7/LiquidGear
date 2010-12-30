@@ -28,11 +28,13 @@
 **/
 
 package lg.flash.model.google.yt {
-	import flash.system.Security;
 	import flash.events.EventDispatcher;
+	import flash.system.Security;
 	
 	import lg.flash.events.ModelEvent;
 	import lg.flash.model.xmlData;
+	import lg.flash.utils.LGDate;
+	import lg.flash.utils.LGString;
 	
 	public class YouTubeVideo extends Object {
 		public var id:String			= '';
@@ -44,7 +46,7 @@ package lg.flash.model.google.yt {
 		public var link:Array			= [];
 		public var author:Array			= [];
 		public var summary:Object		= {};
-		public var content:Array		= [];
+		public var content:Object		= {};
 		public var description:String	= '';
 		public var keywords:Array		= [];
 		public var duration:int			= 0;
@@ -53,11 +55,83 @@ package lg.flash.model.google.yt {
 		public var credit:Array			= [];
 		public var player:String		= '';
 		public var statistics:Object	= {};
+		public var likes:Object			= {};
 		public var rating:Object		= {};
 		public var longitude:Number		= 0;
 		public var latitude:Number		= 0;
+		public var accessControl:Array	= [];
 		
-		public function YouTubeVideo() {
+		public function YouTubeVideo(obj:Object=null) {
+			if(obj) {
+				setAttributes(obj);
+			}
+		}
+		
+		public function setAttributes(obj:Object):void {
+			var g:int;
+			var len:int;
+			var list:Array;
+			
+			if(obj.published) {published				= convertDate(obj.published.$t);}
+			if(obj.updated) {updated					= convertDate(obj.updated.$t);}
+			if(obj.title) {title						= obj.title.$t;}
+			if(obj.content) {content					= obj.content.$t;}
+			if(obj.link) {link							= obj.link;}
+			if(obj['yt$accessControl']) {accessControl	= obj['yt$accessControl'];}
+			
+			if(obj.category && obj.category.length > 0) {
+				list	= obj.category as Array;
+				len		= list.length;
+				
+				for(g=0; g<len; g++) {
+					category.push(list[g].term);
+				}
+			}
+			
+			if(obj.author && obj.author.length > 0) {
+				list	= obj.author as Array;
+				len		= list.length;
+				
+				for(g=0; g<len; g++) {
+					author.push(list[g].name.$t);
+				}
+			}
+			
+			if(obj['media$group']) {
+				var media:Object	= obj['media$group'];
+				
+				if(media['media$description']) {
+					description	= media['media$description'].$t;
+				}
+				if(media['media$keywords']) {
+					keywords	= String(media['media$keywords'].$t).split(', ');
+				}
+				if(media['media$thumbnail']) {
+					thumbnail	= media['media$thumbnail'];
+				}
+				if(media['yt$duration']) {
+					duration	= media['yt$duration'].seconds;
+				}
+				if(media['yt$videoid']) {
+					id			= media['yt$videoid'].$t;
+				}
+			}
+			
+			if(obj['gd$rating']) {
+				rating		= obj['gd$rating'];
+			}
+			if(obj['yt$statistics']) {
+				statistics	= obj['yt$statistics'];
+			}
+			if(obj['yt$rating']) {
+				likes		= obj['yt$rating'];
+			}
+		}
+		
+		private function convertDate(str:String):Date {
+			var str:String	= LGString.trim(str);
+			var date:Date	= LGDate.iso8601ToDate(str);
+			return date;
 		}
 	}
 }

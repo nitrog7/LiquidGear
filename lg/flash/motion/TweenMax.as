@@ -1,6 +1,6 @@
 ﻿/**
- * VERSION: 11.36
- * DATE: 2010-04-27
+ * VERSION: 11.4
+ * DATE: 2010-11-13
  * AS3 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com 
  **/
@@ -48,9 +48,9 @@ package lg.flash.motion {
  * 		<li><b> AS2 and AS3 </b>- Most other engines are only developed for AS2 or AS3 but not both.</li>
  * 	</ul>
  * 	         			
- * <b>SPECIAL PROPERTIES (no plugins required):</b><br /><br />
- * 	
- * 	Any of the following special properties can optionally be passed in through the vars object (the third parameter):
+ * <b>SPECIAL PROPERTIES:</b><br /><br />
+ * The following special properties can be defined in the <code>vars</code> parameter which can 
+ * be either a generic Object or a <code><a href="data/TweenMaxVars.html">TweenMaxVars</a></code> instance:
  *  <ul>
  * 	 <li><b> delay : Number</b>				Amount of delay in seconds (or frames for frames-based tweens) before the tween should begin.</li>
  * 	
@@ -165,6 +165,10 @@ package lg.flash.motion {
  * 												to set just before the tween begins. For example, if mc.x is currently 100, and you'd like to 
  * 												tween it from 0 to 500, do <code>TweenMax.to(mc, 2, {x:500, startAt:{x:0}});</code> </li>
  * </ul>
+ * 
+ * <b>Note:</b> Using a <code><a href="data/TweenMaxVars.html">TweenMaxVars</a></code> instance 
+ * instead of a generic Object to define your <code>vars</code> is a bit more verbose but provides 
+ * code hinting and improved debugging because it enforces strict data typing. Use whichever one you prefer.<br /><br />
  * 
  * <b>PLUGINS: </b><br /><br />
  * 
@@ -292,7 +296,7 @@ package lg.flash.motion {
  */
 	public class TweenMax extends TweenLite implements IEventDispatcher {
 		/** @private **/
-		public static const version:Number = 11.36;
+		public static const version:Number = 11.4;
 		
 		TweenPlugin.activate([
 			
@@ -359,11 +363,11 @@ package lg.flash.motion {
 		/** @private **/
 		protected var _repeatDelay:Number = 0;
 		/** @private **/
-		protected var _cyclesComplete:uint = 0;
+		protected var _cyclesComplete:int = 0;
 		/** @private Indicates the strength of the fast ease - only used for eases that are optimized to make use of the internal code in the render() loop (ones that are activated with FastEase.activate()) **/
-		protected var _easePower:uint;
+		protected var _easePower:int;
 		/** @private 0 = standard function, 1 = optimized easeIn, 2 = optimized easeOut, 3 = optimized easeInOut. Only used for eases that are optimized to make use of the internal code in the render() loop (ones that are activated with FastEase.activate()) **/
-		protected var _easeType:uint; 
+		protected var _easeType:int; 
 		
 		
 		/** 
@@ -387,7 +391,7 @@ package lg.flash.motion {
 				throw new Error("TweenMax error! Please update your TweenLite class or try deleting your ASO files. TweenMax requires a more recent version. Download updates at http://www.TweenMax.com.");
 			}
 			this.yoyo = Boolean(this.vars.yoyo);
-			_repeat = (this.vars.repeat) ? int(this.vars.repeat) : 0;
+			_repeat = uint(this.vars.repeat);
 			_repeatDelay = (this.vars.repeatDelay) ? Number(this.vars.repeatDelay) : 0;
 			this.cacheIsDirty = true; //ensures that if there is any repeat, the totalDuration will get recalculated to accurately report it.
 
@@ -424,7 +428,7 @@ package lg.flash.motion {
 			}
 			//accommodate rounding if necessary...
 			if (this.vars.roundProps != null && "roundProps" in TweenLite.plugins) {
-				var j:int, prop:String, multiProps:String, rp:Array = this.vars.roundProps, plugin:Object, ptPlugin:PropTween, pt:PropTween;
+				var prop:String, multiProps:String, rp:Array = this.vars.roundProps, plugin:Object, ptPlugin:PropTween, pt:PropTween;
 				var i:int = rp.length;
 				while (--i > -1) {
 					prop = rp[i];
@@ -661,7 +665,12 @@ package lg.flash.motion {
 						this.cachedTime = this.ratio = 0;
 					}
 				} else if (time > 0) {
-					if (_cyclesComplete != (_cyclesComplete = int(this.cachedTotalTime / cycleDuration))) {
+					var prevCycles:int = _cyclesComplete;
+					_cyclesComplete = (this.cachedTotalTime / cycleDuration) >> 0; //rounds result, like int()
+					if (_cyclesComplete == this.cachedTotalTime / cycleDuration) {
+						_cyclesComplete--; //otherwise when rendered exactly at the end time, it will act as though it is repeating (at the beginning)
+					}
+					if (prevCycles != _cyclesComplete) {
 						repeated = true;
 					}
 					
@@ -935,13 +944,13 @@ package lg.flash.motion {
 		 */
 		public static function allTo(targets:Array, duration:Number, vars:Object, stagger:Number=0, onCompleteAll:Function=null, onCompleteAllParams:Array=null):Array {
 			var i:int, varsDup:Object, p:String;
-			var l:uint = targets.length;
+			var l:int = targets.length;
 			var a:Array = [];
 			var curDelay:Number = ("delay" in vars) ? Number(vars.delay) : 0;
 			var onCompleteProxy:Function = vars.onComplete;
 			var onCompleteParamsProxy:Array = vars.onCompleteParams;
 			var lastIndex:int = (stagger <= 0) ? 0 : l - 1;
-			for (i = 0; i < l; i++) {
+			for (i = 0; i < l; i += 1) {
 				varsDup = {};
 				for (p in vars) {
 					varsDup[p] = vars[p];
@@ -1044,9 +1053,9 @@ package lg.flash.motion {
 			var toReturn:Array = [];
 			if (a) {
 				var i:int = a.length;
-				var cnt:uint = 0;
+				var cnt:int = 0;
 				while (--i > -1) {
-					if (!a[i].gc) {
+					if (!TweenLite(a[i]).gc) {
 						toReturn[cnt++] = a[i];
 					}
 				}
@@ -1083,7 +1092,7 @@ package lg.flash.motion {
 		 */
 		public static function getAllTweens():Array {
 			var ml:Dictionary = masterList; //speeds things up slightly
-			var cnt:uint = 0;
+			var cnt:int = 0;
 			var toReturn:Array = [], a:Array, i:int;
 			for each (a in ml) {
 				i = a.length;
@@ -1097,8 +1106,20 @@ package lg.flash.motion {
 		}
 		
 		/**
-		 * Kills all tweens and/or delayedCalls/callbacks, optionally forcing them to completion first.
+		 * Kills all tweens and/or delayedCalls/callbacks, optionally forcing them to completion first. The 
+		 * various parameters provide a way to distinguish between delayedCalls and tweens, so if you want to 
+		 * kill EVERYTHING (tweens and delayedCalls), you'd do:<br /><br /><code>
 		 * 
+		 * TweenMax.killAll(false, true, true);<br /><br /></code>
+		 * 
+		 * But if you want to kill only the tweens but allow the delayedCalls to continue, you'd do:<br /><br /><code>
+		 * 
+		 * TweenMax.killAll(false, false, true);<br /><br /></code>
+		 * 
+		 * And if you want to kill only the delayedCalls but not the tweens, you'd do:<br /><br /><code>
+		 * 
+		 * TweenMax.killAll(false, true, false);<br /></code>
+		 *  
 		 * @param complete Determines whether or not the tweens/delayedCalls/callbacks should be forced to completion before being killed.
 		 * @param tweens If true, all tweens will be killed
 		 * @param delayedCalls If true, all delayedCalls will be killed. TimelineMax callbacks are treated the same as delayedCalls.
@@ -1279,7 +1300,7 @@ package lg.flash.motion {
 			if (n == 0) { //can't allow zero because it'll throw the math off
 				n = 0.0001;
 			}
-			var tlTime:Number = (_pauseTime || _pauseTime == 0) ? _pauseTime : this.timeline.cachedTotalTime;
+			var tlTime:Number = (this.cachedPauseTime || this.cachedPauseTime == 0) ? this.cachedPauseTime : this.timeline.cachedTotalTime;
 			this.cachedStartTime = tlTime - ((tlTime - this.cachedStartTime) * this.cachedTimeScale / n);
 			this.cachedTimeScale = n;
 			setDirtyCache(false);

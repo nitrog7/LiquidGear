@@ -1,6 +1,6 @@
 /**
- * VERSION: 1.37
- * DATE: 2010-05-11
+ * VERSION: 1.392
+ * DATE: 2010-10-13
  * AS3 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://www.greensock.com/timelinemax/
  **/
@@ -9,11 +9,10 @@ package lg.flash.motion {
 	import lg.flash.motion.events.TweenEvent;
 	
 	import flash.events.*;
-	import flash.utils.*;
 /**
  * 	TimelineMax extends TimelineLite, offering exactly the same functionality plus useful 
  *  (but non-essential) features like AS3 event dispatching, repeat, repeatDelay, yoyo, 
- *  currentLabel, addCallback(), removeCallback(), tweenTo(), getLabelAfter(), getLabelBefore(),
+ *  currentLabel, addCallback(), removeCallback(), tweenTo(), tweenFromTo(), getLabelAfter(), getLabelBefore(),
  * 	and getActive() (and probably more in the future). It is the ultimate sequencing tool. 
  *  Think of a TimelineMax instance like a virtual MovieClip timeline or a container where 
  *  you place tweens (or other timelines) over the course of time. You can:
@@ -146,14 +145,14 @@ package lg.flash.motion {
  **/
 	public class TimelineMax extends TimelineLite implements IEventDispatcher {
 		/** @private **/
-		public static const version:Number = 1.37;
+		public static const version:Number = 1.392;
 		
 		/** @private **/
 		protected var _repeat:int;
 		/** @private **/
 		protected var _repeatDelay:Number;
 		/** @private **/
-		protected var _cyclesComplete:uint;
+		protected var _cyclesComplete:int;
 		/** @private **/
 		protected var _dispatcher:EventDispatcher;
 		/** @private **/
@@ -364,7 +363,7 @@ package lg.flash.motion {
 			varsCopy.onInit = onInitTweenTo;
 			varsCopy.onInitParams = [null, this, NaN];
 			varsCopy.currentTime = parseTimeOrLabel(timeOrLabel);
-			var tl:TweenLite = new TweenLite(this, Math.abs(Number(varsCopy.currentTime) - this.cachedTime) / this.cachedTimeScale || 0.001, varsCopy);
+			var tl:TweenLite = new TweenLite(this, (Math.abs(Number(varsCopy.currentTime) - this.cachedTime) / this.cachedTimeScale) || 0.001, varsCopy);
 			tl.vars.onInitParams[0] = tl;
 			return tl;
 		}
@@ -405,7 +404,7 @@ package lg.flash.motion {
 		public function tweenFromTo(fromTimeOrLabel:*, toTimeOrLabel:*, vars:Object=null):TweenLite {
 			var tl:TweenLite = tweenTo(toTimeOrLabel, vars);
 			tl.vars.onInitParams[2] = parseTimeOrLabel(fromTimeOrLabel);
-			tl.duration = Math.abs(Number(tl.vars.currentTime) - tl.vars.onInitParams[2]);
+			tl.duration = Math.abs(Number(tl.vars.currentTime) - tl.vars.onInitParams[2]) / this.cachedTimeScale;
 			return tl;
 		}
 		
@@ -416,7 +415,7 @@ package lg.flash.motion {
 				timeline.currentTime = fromTime;
 			}
 			if (tween.vars.currentTime != timeline.currentTime) { //don't make the duration zero - if it's supposed to be zero, don't worry because it's already initting the tween and will complete immediately, effectively making the duration zero anyway. If we make duration zero, the tween won't run at all.
-				tween.duration = Math.abs(Number(tween.vars.currentTime) - timeline.currentTime);
+				tween.duration = Math.abs(Number(tween.vars.currentTime) - timeline.currentTime) / timeline.cachedTimeScale;
 			}
 		}
 		
@@ -433,7 +432,7 @@ package lg.flash.motion {
 			} else if (!this.active && !this.cachedPaused) {
 				this.active = true; //so that if the user renders a tween (as opposed to the timeline rendering it), the timeline is forced to re-render and align it with the proper time/frame on the next rendering cycle. Maybe the tween already finished but the user manually re-renders it as halfway done.
 			}
-			var totalDur:Number = (this.cacheIsDirty) ? this.totalDuration : this.cachedTotalDuration, prevTime:Number = this.cachedTime, prevStart:Number = this.cachedStartTime, tween:TweenCore, isComplete:Boolean, rendered:Boolean, repeated:Boolean, next:TweenCore, dur:Number, prevPaused:Boolean = this.cachedPaused;
+			var totalDur:Number = (this.cacheIsDirty) ? this.totalDuration : this.cachedTotalDuration, prevTime:Number = this.cachedTime, prevStart:Number = this.cachedStartTime, prevTimeScale:Number = this.cachedTimeScale, tween:TweenCore, isComplete:Boolean, rendered:Boolean, repeated:Boolean, next:TweenCore, dur:Number, prevPaused:Boolean = this.cachedPaused;
 			if (time >= totalDur) {
 				if (_rawPrevTime <= totalDur && _rawPrevTime != time) {
 					if (!this.cachedReversed && this.yoyo && _repeat % 2 != 0) {
@@ -475,13 +474,17 @@ package lg.flash.motion {
 				
 			if (_repeat != 0) {
 				var cycleDuration:Number = this.cachedDuration + _repeatDelay;
+				var prevCycles:int = _cyclesComplete;
 				if (isComplete) {
 					if (this.yoyo && _repeat % 2) {
 						this.cachedTime = 0;
 					}
 				} else if (time > 0) {
-					var prevCycle:Number = _cyclesComplete;
-					if (_cyclesComplete != (_cyclesComplete = int(this.cachedTotalTime / cycleDuration))) {
+					_cyclesComplete = (this.cachedTotalTime / cycleDuration) >> 0; //rounds result, like int()
+					if (_cyclesComplete == this.cachedTotalTime / cycleDuration) {
+						_cyclesComplete--; //otherwise when rendered exactly at the end time, it will act as though it is repeating (at the beginning)
+					}
+					if (prevCycles != _cyclesComplete) {
 						repeated = true;
 					}
 					
@@ -508,9 +511,9 @@ package lg.flash.motion {
 					*/
 					
 					var forward:Boolean = Boolean(!this.yoyo || (_cyclesComplete % 2 == 0));
-					var prevForward:Boolean = Boolean(!this.yoyo || (prevCycle % 2 == 0));
+					var prevForward:Boolean = Boolean(!this.yoyo || (prevCycles % 2 == 0));
 					var wrap:Boolean = Boolean(forward == prevForward);
-					if (prevCycle > _cyclesComplete) {
+					if (prevCycles > _cyclesComplete) {
 						prevForward = !prevForward;
 					}
 					
@@ -592,7 +595,7 @@ package lg.flash.motion {
 			if (_hasUpdateListener && !suppressEvents) {
 				_dispatcher.dispatchEvent(new TweenEvent(TweenEvent.UPDATE));
 			}
-			if (isComplete && prevStart == this.cachedStartTime) { //if one of the tweens that was rendered altered this timeline's startTime (like if an onComplete reversed the timeline), we shouldn't run complete() because it probably isn't complete. If it is, don't worry, because whatever call altered the startTime would have called complete() if it was necessary at the new time.
+			if (isComplete && (prevStart == this.cachedStartTime || prevTimeScale != this.cachedTimeScale) && (totalDur >= this.totalDuration || this.cachedTime == 0)) { //if one of the tweens that was rendered altered this timeline's startTime (like if an onComplete reversed the timeline) or if it added more tweens to the timeline, we shouldn't run complete() because it probably isn't complete. If it is, don't worry, because whatever call altered the startTime would have called complete() if it was necessary at the new time. The only exception is the timeScale property.
 				complete(true, suppressEvents);
 			} else if (repeated && !suppressEvents) {
 				if (this.vars.onRepeat) {
@@ -631,9 +634,9 @@ package lg.flash.motion {
 		 */
 		public function getActive(nested:Boolean=true, tweens:Boolean=true, timelines:Boolean=false):Array {
 			var a:Array = [], all:Array = getChildren(nested, tweens, timelines), i:int;
-			var l:uint = all.length;
-			var cnt:uint = 0;
-			for (i = 0; i < l; i++) {
+			var l:int = all.length;
+			var cnt:int = 0;
+			for (i = 0; i < l; i += 1) {
 				if (TweenCore(all[i]).active) {
 					a[cnt++] = all[i];
 				}
@@ -666,8 +669,8 @@ package lg.flash.motion {
 				time = this.cachedTime;
 			}
 			var labels:Array = getLabelsArray();
-			var l:uint = labels.length;
-			for (var i:int = 0; i < l; i++) {
+			var l:int = labels.length;
+			for (var i:int = 0; i < l; i += 1) {
 				if (labels[i].time > time) {
 					return labels[i].name;
 				}
@@ -797,7 +800,7 @@ package lg.flash.motion {
 			return this.cachedTotalDuration;
 		}
 		
-		/** @inheritDoc **/
+		/** @private **/
 		override public function set currentTime(n:Number):void {
 			if (_cyclesComplete == 0) {
 				setTotalTime(n, false);

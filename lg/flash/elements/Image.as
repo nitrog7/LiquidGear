@@ -135,36 +135,75 @@ package lg.flash.elements {
 		public function get image():Bitmap {
 			return data.image;
 		}
-		public function set image(value:Bitmap):void {
-			if(!value) {
+		public function set image(bitmap:Bitmap):void {
+			if(!bitmap) {
 				return;
 			}
 			
 			clean();
 			
-			data.image		= value;
-			value.smoothing	= true;
-			addChild(value);
+			data.image			= bitmap;
+			bitmap.smoothing	= true;
+			addChild(bitmap);
 			
 			//Set size to content if not already set
 			if(position == 'stretch') {
 				setSize(data.stage.stageWidth, data.stage.stageHeight);
 			} else {
 				if(!isNaN(data.width)) {
-					width	= data.width;
+					width		= data.width;
 				} else {
-					width	= value.width;
+					data.width	= bitmap.width;
 				}
 				
 				if(!isNaN(data.height)) {
-					height	= data.height;
+					height		= data.height;
 				} else {
-					height	= value.height;
+					data.height	= bitmap.height;
 				}
 			}
-			
+			/*
+			if(!isNaN(data.scaleX)) {
+				image.scaleX	= data._scaleX;
+			}
+			if(!isNaN(data.scaleY)) {
+				image.scaleY	= data._scaleY;
+			}
+			*/
 			data._isLoaded	= true;
 			trigger('element_loaded');
+		}
+		
+		public override function set width(value:Number):void {
+			data.width	= value;
+			
+			if(image) {
+				image.width	= value;
+			}
+		}
+		
+		public override function set height(value:Number):void {
+			data.height	= value;
+			
+			if(image) {
+				data.image.height	= value;
+			}
+		}
+		
+		public override function set scaleX(value:Number):void {
+			data._scaleX	= value;
+			
+			if(image) {
+				//data.image.scaleX	= value;
+			}
+		}
+		
+		public override function set scaleY(value:Number):void {
+			data._scaleY	= value;
+			
+			if(image) {
+				//data.image.scaleY	= value;
+			}
 		}
 		
 		public function get actualWidth():Number {

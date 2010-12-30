@@ -1,6 +1,6 @@
 ﻿/**
- * VERSION: 1.133
- * DATE: 2010-01-18
+ * VERSION: 1.38
+ * DATE: 2010-05-24
  * AS3 (AS2 version is also available)
  * UPDATES AND DOCUMENTATION AT: http://www.TweenLite.com
  **/
@@ -28,7 +28,7 @@ package lg.flash.motion.core {
 		
 		/** @private **/
 		public function addChild(tween:TweenCore):void {
-			if (!tween.gc && tween.timeline) {
+			if (!tween.cachedOrphan && tween.timeline) {
 				tween.timeline.remove(tween, true); //removes from existing timeline so that it can be properly added to this one.
 			}
 			tween.timeline = this;
@@ -41,11 +41,12 @@ package lg.flash.motion.core {
 			tween.nextNode = _firstChild;
 			_firstChild = tween;
 			tween.prevNode = null;
+			tween.cachedOrphan = false;
 		}
 		
 		/** @private **/
 		public function remove(tween:TweenCore, skipDisable:Boolean=false):void {
-			if (tween.gc) {
+			if (tween.cachedOrphan) {
 				return; //already removed!
 			} else if (!skipDisable) {
 				tween.setEnabled(false, true);
@@ -61,6 +62,7 @@ package lg.flash.motion.core {
 			} else if (_firstChild == tween) {
 				_firstChild = tween.nextNode;
 			}
+			tween.cachedOrphan = true;
 			//don't null nextNode and prevNode, otherwise the chain could break in rendering loops.
 		}
 

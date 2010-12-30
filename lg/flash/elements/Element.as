@@ -229,12 +229,12 @@ package lg.flash.elements {
 			data.stretch	= true;
 			
 			switch(Capabilities.playerType) {
-				case 'External':
-				case 'StandAlone':
-					data._development	= true;
+				case 'ActiveX':
+				case 'PlugIn':
+					data._development	= false;
 					break;
 				default :
-					data._development	= false;
+					data._development	= true;
 					break;
 			}
 		}
@@ -251,6 +251,10 @@ package lg.flash.elements {
 			
 			for(var s:String in obj) {
 				data[s] 	= obj[s];
+				
+				if(s.substr(1, 1) == '_') {
+					continue;
+				}
 				
 				if(ignore) {
 					if(ignore.indexOf(s) >= 0) {
@@ -898,7 +902,11 @@ package lg.flash.elements {
 		}
 		/** @private **/
 		protected function onProgress(e:ProgressEvent):void {
-			trigger('element_progress', null, e);
+			var params:Object	= {};
+			params.bytesLoaded	= e.bytesLoaded;
+			params.bytesTotal	= e.bytesTotal;
+			
+			trigger('element_progress', params, e);
 		}
 		
 		/** Sets the element up to be a container to other visible items. The 
