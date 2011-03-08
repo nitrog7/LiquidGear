@@ -1,28 +1,1 @@
-package lg.flash.motion.easing {
-	public class Elastic {
-		private static const _2PI:Number = Math.PI * 2;
-		
-		public static function easeIn (t:Number, b:Number, c:Number, d:Number, a:Number = 0, p:Number = 0):Number {
-			var s:Number;
-			if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-			if (!a || (c > 0 && a < c) || (c < 0 && a < -c)) { a=c; s = p/4; }
-			else s = p/_2PI * Math.asin (c/a);
-			return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*_2PI/p )) + b;
-		}
-		public static function easeOut (t:Number, b:Number, c:Number, d:Number, a:Number = 0, p:Number = 0):Number {
-			var s:Number;
-			if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
-			if (!a || (c > 0 && a < c) || (c < 0 && a < -c)) { a=c; s = p/4; }
-			else s = p/_2PI * Math.asin (c/a);
-			return (a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*_2PI/p ) + c + b);
-		}
-		public static function easeInOut (t:Number, b:Number, c:Number, d:Number, a:Number = 0, p:Number = 0):Number {
-			var s:Number;
-			if (t==0) return b;  if ((t/=d*0.5)==2) return b+c;  if (!p) p=d*(.3*1.5);
-			if (!a || (c > 0 && a < c) || (c < 0 && a < -c)) { a=c; s = p/4; }
-			else s = p/_2PI * Math.asin (c/a);
-			if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*_2PI/p )) + b;
-			return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*_2PI/p )*.5 + c + b;
-		}
-	}
-}
+﻿/*** Elastic by Grant Skinner. Nov 3, 2009* Visit www.gskinner.com/blog for documentation, updates and more free code.** Adapted from Robert Penner's AS3 tweening equations.** Copyright (c) 2009 Grant Skinner* * Permission is hereby granted, free of charge, to any person* obtaining a copy of this software and associated documentation* files (the "Software"), to deal in the Software without* restriction, including without limitation the rights to use,* copy, modify, merge, publish, distribute, sublicense, and/or sell* copies of the Software, and to permit persons to whom the* Software is furnished to do so, subject to the following* conditions:* * The above copyright notice and this permission notice shall be* included in all copies or substantial portions of the Software.* * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR* OTHER DEALINGS IN THE SOFTWARE.**/package lg.flash.motion.easing {		/**	* Easing class for use with GTween. This ease class is not compatible with other tweening engines.	* GTween can use standard t,b,c,d format ease classes.	**/	public class Elastic {				protected static var a:Number=1;		protected static var p:Number=0.3;		protected static var s:Number=p/4;				// unused params are included for compatibility with other easing classes.		public static function easeIn(ratio:Number, unused1:Number, unused2:Number, unused3:Number):Number {			if (ratio == 0 || ratio == 1) { return ratio; }			return -(a * Math.pow(2, 10 * (ratio -= 1)) * Math.sin((ratio - s) * (2 * Math.PI) / p));		}				public static function easeOut(ratio:Number, unused1:Number, unused2:Number, unused3:Number):Number {			if (ratio == 0 || ratio == 1) { return ratio; }			return a * Math.pow(2, -10 * ratio) *  Math.sin((ratio - s) * (2 * Math.PI) / p) + 1;		}				public static function easeInOut(ratio:Number, unused1:Number, unused2:Number, unused3:Number):Number {			if (ratio == 0 || ratio == 1) { return ratio; }			ratio = ratio*2-1;						if (ratio < 0) {				return -0.5 * (a * Math.pow(2, 10 * ratio) * Math.sin((ratio - s*1.5) * (2 * Math.PI) /(p*1.5)));			}			return 0.5 * a * Math.pow(2, -10 * ratio) * Math.sin((ratio - s*1.5) * (2 * Math.PI) / (p*1.5)) + 1;		}	}}

@@ -28,8 +28,8 @@
 **/
 
 package lg.flash.utils {
-	import lg.flash.utils.json.JSONEncoder;
 	import lg.flash.utils.json.JSONDecoder;
+	import lg.flash.utils.json.JSONEncoder;
 	
 	/**
 	 * This class provides encoding and decoding of the JSON format.

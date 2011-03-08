@@ -1,258 +1,1 @@
-/**
- * Tween Class by Giraldo Rosales.
-* Visit www.liquidgear.net for documentation and updates.
-*
-*
-* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
-* 
-* Permission is hereby granted, free of charge, to any person
-* obtaining a copy of this software and associated documentation
-* files (the "Software"), to deal in the Software without
-* restriction, including without limitation the rights to use,
-* copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the
-* Software is furnished to do so, subject to the following
-* conditions:
-* 
-* The above copyright notice and this permission notice shall be
-* included in all copies or substantial portions of the Software.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-* OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-* HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-* OTHER DEALINGS IN THE SOFTWARE.
-**/
-
-package lg.flash.motion {
-	//Flash
-	import flash.display.DisplayObject;
-	import flash.events.Event;
-	
-	import lg.flash.elements.Element;
-	import lg.flash.elements.VisualElement;
-	import lg.flash.events.ElementDispatcher;
-	import lg.flash.events.ElementEvent;
-	import lg.flash.motion.TweenMax;
-	import lg.flash.motion.easing.Linear;
-	import lg.flash.motion.events.TweenEvent;
-	
-	/**
-	*	<p>Extends BetweenAS3 functionality.</p>
-	*/
-	public class Tween extends ElementDispatcher {
-		public var tween:TweenMax;
-		
-		/** 
-		*	Constructs a new Tween object
-		*	@param obj Object containing all properties to construct the class.
-		**/
-		public function Tween(obj:Object=null) {
-			super();
-			
-			//Set target
-			if(!('target' in obj)) {
-				return;
-			}
-			
-			//Default
-			var dsp:Object		= obj.target;
-			
-			//Set defaults
-			data.duration			= 0;
-			data.delay				= 0;
-			data.immediateRender	= true;
-			data.overwrite			= 2;
-			
-			//Get properties
-			var propObj:Object	= {};
-			var ignore:Array	= ['duration'];
-			var extra:Array		= ['autoAlpha','delay','paused','ease','easeParams','reversed','immediateRender','overwrite','startAt','bezier','bezierThrough',
-				'repeat','repeatDelay','yoyo','onInit','onInitParams','onStart','onStartParams','onComplete','onCompleteParams','immediateRender',
-				'onUpdate','onUpdateParams','onRepeat','onRepeatParams','onReverseComplete','onReverseCompleteParams','overwrite'];
-			
-			if(obj.alpha != undefined) {
-				obj.autoAlpha	= obj.alpha;
-				delete obj.alpha;
-			}
-			
-			for(var s:String in obj) {
-				if((s in dsp || extra.indexOf(s) >= 0) && ignore.indexOf(s) < 0) {
-					propObj[s]	= obj[s];
-				}
-				
-				data[s]	= obj[s];
-			}
-			
-			//Create tween
-			tween	= TweenMax.to(dsp, data.duration, propObj);
-		}
-		
-		/** The current progress of the tween. **/
-		public function set currentProgress(value:Number):void {
-			tween.currentProgress	= value;
-		}
-		public function get currentProgress():Number {
-			return tween.currentProgress;
-		}
-		
-		/** The length of the delay in frames or seconds **/
-		public function set delay(value:Number):void {
-			tween.delay	= value;
-		}
-		public function get delay():Number {
-			return tween.delay;
-		}
-		
-		/** The length of the tween in frames or seconds **/
-		public function set duration(value:Number):void {
-			if(value <= 0) {
-				data.duration	= 0;
-			} else {
-				data.duration	= value;
-			}
-			
-			tween.duration	= data.duration;
-		}
-		public function get duration():Number {
-			return data.duration;
-		}
-		
-		/** Callback for the change event. **/
-		public function set onChange(value:Function):void {
-			data.onChange	= value;
-			
-			if(value != null) {
-				tween.addEventListener(TweenEvent.UPDATE, updateTween);
-			} else {
-				tween.removeEventListener(TweenEvent.UPDATE, updateTween);
-			}
-		}
-		public function get onChange():Function {
-			return data.onChange;
-		}
-		/** Callback parameters for the change event. **/
-		public function set onChangeParams(value:Array):void {
-			data.onChangeParams	= value;
-		}
-		public function get onChangeParams():Array {
-			var value:Array	= data.onChangeParams as Array;
-			
-			if(value && value.length == 0) {
-				value	= null;
-			}
-			
-			return value;
-		}
-		private function updateTween(t:TweenEvent):void {
-			var fnc:Function	= data.onChange as Function;
-			
-			if(data.onChangeParams) {
-				fnc(data.onChangeParams);
-			} else if (fnc != null) {
-				fnc();
-			}
-		}
-		
-		/** Callback for the complete event. **/
-		public function set onComplete(value:Function):void {
-			data.onComplete		= value;
-			
-			if(value != null) {
-				tween.addEventListener(TweenEvent.COMPLETE, finishTween);
-			} else {
-				tween.removeEventListener(TweenEvent.COMPLETE, finishTween);
-			}
-		}
-		public function get onComplete():Function {
-			return data.onComplete;
-		}
-		/** Callback parameters for the complete event. **/
-		public function set onCompleteParams(value:Array):void {
-			data.onCompleteParams	= value;
-		}
-		public function get onCompleteParams():Array {
-			var value:Array	= data.onCompleteParams as Array;
-			
-			if(value && value.length == 0) {
-				value	= null;
-			}
-			
-			return value;
-		}
-		private function finishTween(t:TweenEvent):void {
-			var fnc:Function	= data.onComplete as Function;
-			
-			if (fnc != null) {
-				if(data.onCompleteParams) {
-					fnc(data.onCompleteParams);
-				} else {
-					fnc();
-				}
-			}
-		}
-		
-		/** Callback for the init event. **/
-		public function set onInit(value:Function):void {
-			data.onInit	= value;
-			
-			if(value != null) {
-				tween.addEventListener(TweenEvent.INIT, finishTween);
-			} else {
-				tween.removeEventListener(TweenEvent.INIT, startTween);
-			}
-		}
-		public function get onInit():Function {
-			return data.onInit;
-		}
-		/** Callback parameters for the init event. **/
-		public function set onInitParams(value:Array):void {
-			data.onInitParams	= value;
-		}
-		public function get onInitParams():Array {
-			var value:Array	= data.onInitParams as Array;
-			
-			if(value && value.length == 0) {
-				value	= null;
-			}
-			
-			return value;
-		}
-		private function startTween(t:TweenEvent):void {
-			var fnc:Function	= data.onInit as Function;
-			
-			if(data.onInitParams) {
-				fnc(data.onInitParams);
-			} else if (fnc != null) {
-				fnc();
-			}
-		}
-		
-		/** The target object to tween. **/
-		public function set target(value:Object):void {
-			tween.target	= value;
-		}
-		public function get target():Object {
-			var dsp:Object;
-			
-			if(tween) {
-				dsp	= tween.target;
-			}
-			
-			return dsp;
-		}
-		
-		/** Play animation. **/
-		public function play():void {
-			tween.paused	= false;
-		}
-		
-		/** Stop animation. **/
-		public function stop():void {
-			tween.paused	= true;
-		}
-	}
-}
+﻿/** * Tween Class by Giraldo Rosales. * Visit www.liquidgear.net for documentation and updates. * * Based on GTween by Grant Skinner. *  * Copyright (c) 2011 Nitrogen Labs, Inc. All rights reserved. *  * Permission is hereby granted, free of charge, to any person * obtaining a copy of this software and associated documentation * files (the "Software"), to deal in the Software without * restriction, including without limitation the rights to use, * copy, modify, merge, publish, distribute, sublicense, and/or sell * copies of the Software, and to permit persons to whom the * Software is furnished to do so, subject to the following * conditions: *  * The above copyright notice and this permission notice shall be * included in all copies or substantial portions of the Software. *  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR * OTHER DEALINGS IN THE SOFTWARE. **/package lg.flash.motion {		import flash.display.Shape;	import flash.events.Event;	import flash.events.EventDispatcher;	import flash.events.IEventDispatcher;	import flash.utils.Dictionary;	import flash.utils.getTimer;		/**	 * Tween is a light-weight instance oriented tween engine. This means that you instantiate tweens for specific purposes, and then reuse, update or discard them.	 * This is different than centralized tween engines where you "register" tweens with a global object. This provides a more familiar and useful interface	 * for object oriented programmers.	 * <br/><br/>	 * In addition to a more traditional setValue/setValues tweening interface, Tween also provides a unique proxy interface to tween and access properties of target objects	 * in a more dynamic fashion. This allows you to work with properties directly, and mostly ignore the details of the tween. The proxy "stands in"	 * for your object when working with tweened properties. For example, you can modify end values (the value you are tweening to), in the middle of a tween.	 * You can also access them dynamically, like so:	 * <br/><br/>	 * <code>mySpriteTween.proxy.rotation += 50;</code>	 * <br/><br/>	 * Assuming no end value has been set for rotation previously, the above example will get the current rotation from the target, add 50 to it, set it as the end	 * value for rotation, and start the tween. If the tween has already started, it will adjust for the new values. This is a hugely powerful feature that	 * requires a bit of exploring to completely understand. See the documentation for the "proxy" property for more information.	 **/	public class Tween extends EventDispatcher {		/** Sets the default value of dispatchEvents for new instances.**/		public static var defaultDispatchEvents:Boolean=false;				/** Specifies the default easing function to use with new tweens. Set to Tween.linearEase by default.**/		public static var defaultEase:Function=linearEase;				/** Setting this to true pauses all tween instances. This does not affect individual tweens' .paused property.**/		public static var pauseAll:Boolean=false;				/**		 * Sets the time scale for all tweens. For example to run all tweens at half speed,		 * you can set timeScaleAll to 0.5. It is multiplied against each tweens timeScale.		 * For example a tween with timeScale=2 will play back at normal speed if timeScaleAll is set to 0.5.		 **/		public static var timeScaleAll:Number=1;				/** @private **/		protected static var hasStarPlugins:Boolean=false;		/** @private **/		protected static var plugins:Object={};		/** @private **/		protected static var shape:Shape;		/** @private **/		protected static var time:Number;		/** @private **/		protected static var tickList:Dictionary = new Dictionary(true);		/** @private **/		protected static var gcLockList:Dictionary = new Dictionary(false);				/**		 * Installs a plugin for the specified property. Plugins with high priority		 * will always be called before other plugins for the same property. This method		 * is primarily used by plugin developers. Plugins are normally installed by calling		 * the install method on them, such as BlurPlugin.install().		 * <br/><br/>		 * Plugins can register to be associated with a specific property name, or to be		 * called for all tweens by registering for the "*" property name. The latter will be called after		 * all properties are inited or tweened for a particular Tween instance.		 *		 * @param plugin The plugin object to register. The plugin should conform to the ITweenPlugin interface.		 * @param propertyNames An array of property names to operate on (ex. "rotation"), or "*" to register the plugin to be called for every Tween instance.		 * @param highPriority If true, the plugin will be added to the start of the plugin list for the specified property name, if false it will be added to the end.		 **/		public static function installPlugin(plugin:Object, propertyNames:Array, highPriority:Boolean=false):void {			var len:int	= propertyNames.length;			var g:int;			var propertyName:String;						for (g=0; g<len; g++) {				propertyName = propertyNames[g];								if (propertyName == '*') {					hasStarPlugins = true;				}				if (plugins[propertyName] == null) {					plugins[propertyName] = [plugin];					continue;				}								if (highPriority) {					plugins[propertyName].unshift(plugin);				} else {					plugins[propertyName].push(plugin);				}			}		}				/** The default easing function used by Tween. **/		public static function linearEase(a:Number, b:Number, c:Number, d:Number):Number {			return a;		}				staticInit();		/** @private **/		protected static function staticInit():void {			shape	= new Shape();			shape.addEventListener(Event.ENTER_FRAME,staticTick);			time	= getTimer()/1000;		}				/** @private **/		protected static function staticTick(evt:Event):void {			var t:Number	= time;			time			= getTimer()/1000;						if (pauseAll) {				return;			}						var dt:Number	= (time-t)*timeScaleAll;			var o:Object;			var tween:Tween;						for (o in tickList) {				tween			= o as Tween;				tween.position	= tween._position+(tween.useFrames?timeScaleAll:dt)*tween.timeScale;			}		}				// Public Properties:		/** @private **/		protected var _delay:Number=0;		/** @private **/		protected var _values:Object;		/** @private **/		protected var _paused:Boolean=true;		/** @private **/		protected var _position:Number;		/** @private **/		protected var _inited:Boolean;		/** @private **/		protected var _initValues:Object;		/** @private **/		protected var _rangeValues:Object;		/** @private **/		protected var _proxy:TargetProxy;				// Protected Properties:		/** Indicates whether the tween should automatically play when an end value is changed.**/		public var autoPlay:Boolean=true;				/** Allows you to associate arbitrary data with your tween. For example, you might use this to reference specific data when handling event callbacks from tweens.**/		public var data:*;				/** The length of the tween in frames or seconds (depending on the timingMode). Setting this will also update any child transitions that have synchDuration set to true.**/		public var duration:Number;				/**		 * The easing function to use for calculating the tween. This can be any standard tween function, such as the tween functions in fl.motion.easing.* that come with Flash CS3.		 * New tweens will have this set to <code>defaultTween</code>. Setting this to null will cause Tween to throw null reference errors.		 **/		public var ease:Function;				/**		 * Specifies another Tween instance that will have <code>paused=false</code> set on it when this tween completes.		 * This happens immediately before onComplete is called.		 **/		public var nextTween:Tween;				/**		 * Stores data for plugins specific to this instance. Some plugins may allow you to set properties on this object that they use.		 * Check the documentation for your plugin to see if any properties are supported.		 * Most plugins also support a property on this object in the form PluginNameEnabled to enable or disable		 * the plugin for this tween (ex. BlurEnabled for BlurPlugin). Many plugins will also store internal data in this object.		 **/		public var pluginData:Object;				/** Indicates whether the tween should use the reflect mode when repeating. If reflect is set to true, then the tween will play backwards on every other repeat.**/		public var reflect:Boolean;				/** The number of times this tween will run. If 1, the tween will only run once. If 2 or more, the tween will repeat that many times. If 0, the tween will repeat forever.**/		public var repeatCount:int=1;				/** The target object to tween. This can be any kind of object. You can retarget a tween at any time, but changing the target in mid-tween may result in unusual behaviour.**/		public var target:Object;				/** If true, durations and positions can be set in frames. If false, they are specified in seconds.**/		public var useFrames:Boolean;				/**		 * Allows you to scale the passage of time for a tween. For example, a tween with a duration of 5 seconds, and a timeScale of 2 will complete in 2.5 seconds.		 * With a timeScale of 0.5 the same tween would complete in 10 seconds.		 **/		public var timeScale:Number=1;				/** The position of the tween at the previous change. This should not be set directly.**/		public var positionOld:Number;				/** The eased ratio (generally between 0-1) of the tween at the current position. This should not be set directly.**/		public var ratio:Number;				/** The eased ratio (generally between 0-1) of the tween at the previous position. This should not be set directly.**/		public var ratioOld:Number;				/**		 * The current calculated position of the tween. 		 * This is a deterministic value between 0 and duration calculated		 * from the current position based on the duration, repeatCount, and reflect properties.		 * This is always a value between 0 and duration, whereas <code>.position</code> can range		 * between -delay and repeatCount*duration. This should not be set directly.		 **/		public var calculatedPosition:Number;				/**		 * The previous calculated position of the tween. See <code>.calculatedPosition</code> for more information.		 * This should not be set directly.		 **/		public var calculatedPositionOld:Number;				/**		 * If true, events/callbacks will not be called. As well as allowing for more		 * control over events, and providing flexibility for extension, this results		 * in a slight performance increase, particularly if useCallbacks is false.		 **/		public var suppressEvents:Boolean;				/**		 * If true, it will dispatch init, change, and complete events in addition to calling the		 * onInit, onChange, and onComplete callbacks. Callbacks provide significantly better		 * performance, whereas events are more standardized and flexible (allowing multiple		 * listeners, for example).		 * <br/><br/>		 * By default this will use the value of defaultDispatchEvents.		 **/		public var dispatchEvents:Boolean;				/**		 * Callback for the complete event. Any function assigned to this callback		 * will be called when the tween finishes with a single parameter containing		 * a reference to the tween.		 * <br/><br/>		 * Ex.<br/>		 * <code><pre>myTween.onComplete = myFunction;		 * function myFunction(tween:Tween):void {		 *	trace("tween completed");		 * }</pre></code>		 **/		public var onComplete:Function;				/**		 * Callback for the change event. Any function assigned to this callback		 * will be called each frame while the tween is active with a single parameter containing		 * a reference to the tween.		 **/		public var onChange:Function;				/**		 * Callback for the init event. Any function assigned to this callback		 * will be called when the tween inits with a single parameter containing		 * a reference to the tween. Init is usually triggered when a tween finishes		 * its delay period and becomes active, but it can also be triggered by other		 * features that require the tween to read the initial values, like calling <code>.swapValues()</code>.		 **/		public var onInit:Function;				/**		 * Constructs a new Tween instance.		 *		 * @param target The object whose properties will be tweened. Defaults to null.		 * @param duration The length of the tween in frames or seconds depending on the timingMode. Defaults to 1.		 * @param values An object containing end property values. For example, to tween to x=100, y=100, you could pass {x:100, y:100} as the values object.		 * @param props An object containing properties to set on this tween. For example, you could pass {ease:myEase} to set the ease property of the new instance. It also supports a single special property "swapValues" that will cause <code>.swapValues</code> to be called after the values specified in the values parameter are set.		 * @param pluginData An object containing data for installed plugins to use with this tween. See <code>.pluginData</code> for more information.		 **/		public function Tween(target:Object=null, duration:Number=1, values:Object=null, props:Object=null, pluginData:Object=null) {			ease			= defaultEase;			dispatchEvents	= defaultDispatchEvents;			this.target		= target;			this.duration	= duration;			this.pluginData	= copy(pluginData,{});						if (props) {				var swap:Boolean = props.swapValues;				delete(props.swapValues);			}						copy(props,this);			resetValues(values);			if (swap) { swapValues(); }			if (this.duration == 0 && delay == 0 && autoPlay) { position=0; }		}				/**		 * Plays or pauses a tween. You can still change the position value externally on a paused		 * tween, but it will not be updated automatically. While paused is false, the tween is also prevented		 * from being garbage collected while it is active.		 * This is achieved in one of two ways:<br/>		 * 1. If the target object is an IEventDispatcher, then the tween will subscribe to a dummy event using a hard reference. This allows		 * the tween to be garbage collected if its target is also collected, and there are no other external references to it.<br/>		 * 2. If the target object is not an IEventDispatcher, then the tween is placed in a global list, to prevent collection until it is paused or completes.<br/>		 * Note that pausing all tweens via the Tween.pauseAll static property will not free the tweens for collection.		 **/		public function get paused():Boolean {			return _paused;		}		public function set paused(value:Boolean):void {			if (value == _paused) { return; }			_paused = value;			if (_paused) {				delete(tickList[this]);				if (target is IEventDispatcher) { target.removeEventListener("_", invalidate); }				delete(gcLockList[this]);			} else {				if (isNaN(_position) || (repeatCount != 0 && _position >= repeatCount*duration)) {					// reached the end, reset.					_inited = false;					calculatedPosition = calculatedPositionOld = ratio = ratioOld = positionOld = 0;					_position = -delay;				}				tickList[this] = true;				// prevent garbage collection:				if (target is IEventDispatcher) { target.addEventListener("_", invalidate); }				else { gcLockList[this] = true; }			}		}				public function pause():void {			_paused	= true;		}		public function play():void {			_paused	= false;		}		public function stop():void {			_paused	= true;			resetValues();		}		/**		 * Gets and sets the position of the tween in frames or seconds (depending on <code>.useFrames</code>). This value will		 * be constrained between -delay and repeatCount*duration. It will be resolved to a <code>calculatedPosition</code> before		 * being applied.		 * <br/><br/>		 * <b>Negative values</b><br/>		 * Values below 0 will always resolve to a calculatedPosition of 0. Negative values can be used to set up a delay on the tween, as the tween will have to count up to 0 before initing.		 * <br/><br/>		 * <b>Positive values</b><br/>		 * Positive values are resolved based on the duration, repeatCount, and reflect properties.		 **/		public function get position():Number {			return _position;		}		public function set position(value:Number):void {			positionOld				= _position;			ratioOld				= ratio;			calculatedPositionOld	= calculatedPosition;			var maxPosition:Number	= repeatCount*duration;			var end:Boolean			= (value >= maxPosition && repeatCount > 0);						if (end) {				if (calculatedPositionOld == maxPosition) { return; }				_position = maxPosition;				calculatedPosition = (reflect && !(repeatCount&1)) ? 0 : duration;			} else {				_position = value;				calculatedPosition = _position<0 ? 0 : _position%duration;				if (reflect && (_position/duration&1)) {					calculatedPosition = duration-calculatedPosition;				}			}						ratio	= (duration == 0 && _position >= 0) ? 1 : ease(calculatedPosition/duration,0,1,1);						if (target && (_position >= 0 || positionOld >= 0) && calculatedPosition != calculatedPositionOld) {				if (!_inited) {					init();				}								var l:int;				var i:int;				var n:String;				var initVal:Number;				var rangeVal:Number;				var val:Number;				var pluginArr:Array;								for (n in _values) {					initVal		= _initValues[n];					rangeVal	= _rangeValues[n];					val			= initVal+rangeVal*ratio;					pluginArr	= plugins[n];										if (pluginArr) {						l = pluginArr.length;												for (i=0; i<l; i++) {							val = pluginArr[i].tween(this,n,val,initVal,rangeVal,ratio,end);						}												if (!isNaN(val)) {							target[n] = val;						}					} else {						target[n] = val;					}				}			}						if (hasStarPlugins) {				pluginArr	= plugins["*"];				l			= pluginArr.length;								for(i=0; i<l; i++) {					pluginArr[i].tween(this,"*",NaN,NaN,NaN,ratio,end);				}			}						if (!suppressEvents) {				if (dispatchEvents) { dispatchEvt("change"); }				if (onChange != null) { onChange(this); }			}			if (end) {				paused	= true;								if(nextTween) {					nextTween.paused	= false;				}								if(!suppressEvents) {					if (dispatchEvents) {						dispatchEvt('complete');					}					if (onComplete != null) {						onComplete(this);					}				}			}		}				/**		 * The length of the delay in frames or seconds (depending on <code>.useFrames</code>).		 * The delay occurs before a tween reads initial values or starts playing.		 **/		public function get delay():Number {			return _delay;		}		public function set delay(value:Number):void {			if (_position <= 0) {				_position = -value;			}						_delay = value;		}				/**		 * The proxy object allows you to work with the properties and methods of the target object directly through Tween.		 * Numeric property assignments will be used by Tween as end values. The proxy will return Tween end values		 * when they are set, or the target's property values if they are not. Delete operations on properties will result in a deleteProperty		 * call. All other property access and method execution through proxy will be passed directly to the target object.		 * <br/><br/>		 * <b>Example 1:</b> Equivalent to calling myTween.setProperty("scaleY",2.5):<br/>		 * <code>myTween.proxy.scaleY = 2.5;</code>		 * <br/><br/>		 * <b>Example 2:</b> Gets the current rotation value from the target object (because it hasn't been set yet on the Tween), adds 100 to it, and then		 * calls setProperty on the Tween instance with the appropriate value:<br/>		 * <code>myTween.proxy.rotation += 100;</code>		 * <br/><br/>		 * <b>Example 3:</b> Sets an end property value (through setProperty) for scaleX, then retrieves it from Tween (because it will always return		 * end values when available):<br/>		 * <code>trace(myTween.proxy.scaleX); // 1 (value from target, because no end value is set)<br/>		 * myTween.proxy.scaleX = 2; // set a end value<br/>		 * trace(myTween.proxy.scaleX); // 2 (end value from Tween)<br/>		 * trace(myTween.target.scaleX); // 1 (current value from target)</code>		 * <br/><br/>		 * <b>Example 4:</b> Property deletions only affect end properties on Tween, not the target object:<br/>		 * <code>myTween.proxy.rotation = 50; // set an end value<br/>		 * trace(myTween.proxy.rotation); // 50 (end value from Tween)<br/>		 * delete(myTween.proxy.rotation); // delete the end value<br/>		 * trace(myTween.proxy.rotation); // 0 (current value from target)</code>		 * <br/><br/>		 * <b>Example 5:</b> Non-numeric property access is passed through to the target:<br/>		 * <code>myTween.proxy.blendMode = "multiply"; // passes value assignment through to the target<br/>		 * trace(myTween.target.blendMode); // "multiply" (value from target)<br/>		 * trace(myTween.proxy.blendMode); // "multiply" (value passed through proxy from target)</code>		 * <br/><br/>		 * <b>Example 6:</b> Method calls are passed through to target:<br/>		 * <code>myTween.proxy.gotoAndStop(30); // gotoAndStop(30) will be called on the target</code>		 **/		public function get proxy():TargetProxy {			if(_proxy == null) {				_proxy = new TargetProxy(this);			}			return _proxy;		}				/**		 * Sets the numeric end value for a property on the target object that you would like to tween.		 * For example, if you wanted to tween to a new x position, you could use: myTween.setValue("x",400).		 *		 * @param name The name of the property to tween.		 * @param value The numeric end value (the value to tween to).		 **/		public function setValue(name:String, value:Number):void {			_values[name] = value;			invalidate();		}				/**		 * Returns the end value for the specified property if one exists.		 *		 * @param name The name of the property to return a end value for.		 **/		public function getValue(name:String):Number {			return _values[name];		}				/**		 * Removes a end value from the tween. This prevents the Tween instance from tweening the property.		 *		 * @param name The name of the end property to delete.		 **/		public function deleteValue(name:String):Boolean {			delete(_rangeValues[name]);			delete(_initValues[name]);			return delete(_values[name]);		}				/**		 * Shorthand method for making multiple setProperty calls quickly.		 * This adds the specified properties to the values list. Passing a		 * property with a value of null will delete that value from the list.		 * <br/><br/>		 * <b>Example:</b> set x and y end values, delete rotation:<br/>		 * <code>myTween.setProperties({x:200, y:400, rotation:null});</code>		 *		 * @param properties An object containing end property values.		 **/		public function setValues(values:Object):void {			copy(values,_values,true);			invalidate();		}				/**		 * Similar to <code>.setValues()</code>, but clears all previous end values		 * before setting the new ones.		 *		 * @param properties An object containing end property values.		 **/		public function resetValues(values:Object=null):void {			_values = {};			setValues(values);		}				/**		 * Returns the hash table of all end properties and their values. This is a copy of the internal hash of values, so modifying		 * the returned object will not affect the tween.		 **/		public function getValues():Object {			return copy(_values, {});		}				/**		 * Returns the initial value for the specified property.		 * Note that the value will not be available until the tween inits.		 **/		public function getInitValue(name:String):Number {			return _initValues[name];		}				/**		 * Swaps the init and end values for the tween, effectively reversing it.		 * This should generally only be called before the tween starts playing.		 * This will force the tween to init if it hasn't already done so, which		 * may result in an onInit call.		 * It will also force a render (so the target immediately jumps to the new values		 * immediately) which will result in the onChange callback being called.		 * <br/><br/>		 * You can also use the special "swapValues" property on the props parameter of		 * the Tween constructor to call swapValues() after the values are set.		 * <br/><br/>		 * The following example would tween the target from 100,100 to its current position:<br/>		 * <code>new Tween(ball, 2, {x:100, y:100}, {swapValues:true});</code>		 **/		public function swapValues():void {			if (!_inited) {				init();			}						var o:Object	= _values;			_values			= _initValues;			_initValues		= o;			var n:String;						for(n in _rangeValues) {				_rangeValues[n] *= -1;			}						if(_position < 0) {				// render it at position 0:				var pos:Number	= positionOld;				position		= 0;				_position		= positionOld;				positionOld		= pos;			} else {				position		= _position;			}		}				/**		 * Reads all of the initial values from target and calls the onInit callback.		 * This is called automatically when a tween becomes active (finishes delaying)		 * and when <code>.swapValues()</code> is called. It would rarely be used directly		 * but is exposed for possible use by plugin developers or power users.		 **/		public function init():void {			_inited			= true;			_initValues		= {};			_rangeValues	= {};						var pluginArr:Array;			var l:int;			var value:Number;			var i:int;			var n:String;						for (n in _values) {				if (plugins[n]) {					pluginArr	= plugins[n];					l			= pluginArr.length;					value		= (n in target) ? target[n] : NaN;										for (i=0; i<l; i++) {						value = pluginArr[i].init(this,n,value);					}										if (!isNaN(value)) {						_rangeValues[n] = _values[n]-(_initValues[n] = value);					}				} else {					_rangeValues[n] = _values[n]-(_initValues[n] = target[n]);				}			}						if (hasStarPlugins) {				pluginArr	= plugins["*"];				l			= pluginArr.length;								for (i=0; i<l; i++) {					pluginArr[i].init(this,"*",NaN);				}			}						if (!suppressEvents) {				if (dispatchEvents) {					dispatchEvt('init');				}				if (onInit != null) {					onInit(this);				}			}		}				/** Jumps the tween to its beginning and pauses it. This is the same as setting <code>position=0</code> and <code>paused=true</code>.**/		public function beginning():void {			position	= 0;			paused		= true;		}				/** Jumps the tween to its end and pauses it. This is roughly the same as setting <code>position=repeatCount*duration</code>.**/		public function end():void {			position = (repeatCount > 0) ? repeatCount*duration : duration;		}				// Protected Methods:		/** @private **/		protected function invalidate():void {			_inited	= false;						if (_position > 0) {				_position	= 0;			}			if (autoPlay) {				paused		= false;			}		}				/** @private **/		protected function copy(o1:Object,o2:Object,smart:Boolean=false):Object {			var n:String;						for (n in o1) {				if (smart && o1[n] == null) {					delete(o2[n]);				} else {					o2[n] = o1[n];				}			}			return o2;		}				/** @private **/		protected function dispatchEvt(name:String):void {			if(hasEventListener(name)) {				dispatchEvent(new Event(name));			}		}	}}import flash.utils.Proxy;import flash.utils.flash_proxy;import lg.flash.motion.Tween;dynamic class TargetProxy extends Proxy {	private var tween:Tween;		public function TargetProxy(tween:Tween):void {		this.tween = tween;	}		// proxy methods:	flash_proxy override function callProperty(methodName:*, ...args:Array):* {		return tween.target[methodName].apply(null,args);	}		flash_proxy override function getProperty(prop:*):* {		var value:Number = tween.getValue(prop);		return (isNaN(value)) ? tween.target[prop] : value;	}		flash_proxy override function setProperty(prop:*,value:*):void {		if (value is Boolean || value is String || isNaN(value)) {			tween.target[prop] = value;		} else {			tween.setValue(String(prop), Number(value));		}	}		flash_proxy override function deleteProperty(prop:*):Boolean {		tween.deleteValue(prop);		return true;	}}

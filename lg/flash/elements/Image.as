@@ -3,7 +3,7 @@
 * Visit www.liquidgear.net for documentation and updates.
 *
 *
-* Copyright (c) 2010 Nitrogen Labs, Inc. All rights reserved.
+* Copyright (c) 2011 Nitrogen Labs, Inc. All rights reserved.
 * 
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -69,7 +69,7 @@ package lg.flash.elements {
 			data.image		= null;
 			
 			//Set Attributes
-			setAttributes(obj, ['src', 'image', 'width', 'height']);
+			setAttributes(obj, ['src', 'image']);
 			
 			if(data.src != '') {
 				src		= obj.src;
@@ -171,7 +171,7 @@ package lg.flash.elements {
 			}
 			*/
 			data._isLoaded	= true;
-			trigger('element_loaded');
+			trigger(ElementEvent.LOADED);
 		}
 		
 		public override function set width(value:Number):void {
@@ -179,6 +179,7 @@ package lg.flash.elements {
 			
 			if(image) {
 				image.width	= value;
+				trigger(ElementEvent.RESIZE);
 			}
 		}
 		
@@ -186,7 +187,8 @@ package lg.flash.elements {
 			data.height	= value;
 			
 			if(image) {
-				data.image.height	= value;
+				image.height	= value;
+				trigger(ElementEvent.RESIZE);
 			}
 		}
 		
@@ -194,7 +196,7 @@ package lg.flash.elements {
 			data._scaleX	= value;
 			
 			if(image) {
-				//data.image.scaleX	= value;
+				data.image.scaleX	= value;
 			}
 		}
 		
@@ -202,7 +204,7 @@ package lg.flash.elements {
 			data._scaleY	= value;
 			
 			if(image) {
-				//data.image.scaleY	= value;
+				data.image.scaleY	= value;
 			}
 		}
 		
@@ -290,7 +292,6 @@ package lg.flash.elements {
 		
 		/** Kill the object and clean from memory. **/
 		public override function kill():void {
-			
 			//Remove Children
 			clean();
 			

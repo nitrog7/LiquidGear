@@ -1,97 +1,1 @@
-/**
- * VERSION: 1.52
- * DATE: 10/2/2009
- * ACTIONSCRIPT VERSION: 3.0 
- * UPDATES AND DOCUMENTATION AT: http://www.TweenMax.com
- **/
-package lg.flash.motion.plugins {
-	import flash.display.*;
-	import flash.geom.ColorTransform;
-	import lg.flash.motion.*;
-/**
- * Ever wanted to tween ColorTransform properties of a DisplayObject to do advanced effects like overexposing, altering
- * the brightness or setting the percent/amount of tint? Or maybe tween individual ColorTransform 
- * properties like redMultiplier, redOffset, blueMultiplier, blueOffset, etc. ColorTransformPlugin gives you an easy way to 
- * do just that. <br /><br />
- * 
- * <b>PROPERTIES:</b><br />
- * <ul>
- * 		<li><code> tint (or color) : uint</code> - Color of the tint. Use a hex value, like 0xFF0000 for red.</li>
- * 		<li><code> tintAmount : Number</code> - Number between 0 and 1. Works with the "tint" property and indicats how much of an effect the tint should have. 0 makes the tint invisible, 0.5 is halfway tinted, and 1 is completely tinted.</li>
- * 		<li><code> brightness : Number</code> - Number between 0 and 2 where 1 is normal brightness, 0 is completely dark/black, and 2 is completely bright/white</li>
- * 		<li><code> exposure : Number</code> - Number between 0 and 2 where 1 is normal exposure, 0, is completely underexposed, and 2 is completely overexposed. Overexposing an object is different then changing the brightness - it seems to almost bleach the image and looks more dynamic and interesting (subjectively speaking).</li> 
- * 		<li><code> redOffset : Number</code></li>
- * 		<li><code> greenOffset : Number</code></li>
- * 		<li><code> blueOffset : Number</code></li>
- * 		<li><code> alphaOffset : Number</code></li>
- * 		<li><code> redMultiplier : Number</code></li>
- * 		<li><code> greenMultiplier : Number</code></li>
- * 		<li><code> blueMultiplier : Number</code></li>
- * 		<li><code> alphaMultiplier : Number</code> </li>
- * </ul><br /><br />
- * 
- * <b>USAGE:</b><br /><br />
- * <code>
- * 		import lg.flash.motion.TweenLite; <br />
- * 		import lg.flash.motion.plugins.TweenPlugin; <br />
- * 		import lg.flash.motion.plugins.ColorTransformPlugin; <br />
- * 		TweenPlugin.activate([ColorTransformPlugin]); //activation is permanent in the SWF, so this line only needs to be run once.<br /><br />
- * 
- * 		TweenLite.to(mc, 1, {colorTransform:{tint:0xFF0000, tintAmount:0.5}}); <br /><br />
- * </code>
- * 
- * <b>Copyright 2010, GreenSock. All rights reserved.</b> This work is subject to the terms in <a href="http://www.greensock.com/terms_of_use.html">http://www.greensock.com/terms_of_use.html</a> or for corporate Club GreenSock members, the software agreement that was issued with the corporate membership.
- * 
- * @author Jack Doyle, jack@greensock.com
- */
-	public class ColorTransformPlugin extends TintPlugin {
-		/** @private **/
-		public static const API:Number = 1.0; //If the API/Framework for plugins changes in the future, this number helps determine compatibility
-		
-		/** @private **/
-		public function ColorTransformPlugin() {
-			super();
-			this.propName = "colorTransform"; 
-		}
-		
-		/** @private **/
-		override public function onInitTween(target:Object, value:*, tween:TweenLite):Boolean {
-			if (!(target is DisplayObject)) {
-				return false;
-			}
-			var end:ColorTransform = target.transform.colorTransform;
-			for (var p:String in value) {
-				if (p == "tint" || p == "color") {
-					if (value[p] != null) {
-						end.color = int(value[p]);
-					}
-				} else if (p == "tintAmount" || p == "exposure" || p == "brightness") {
-					//handle this later...
-				} else {
-					end[p] = value[p];
-				}
-			}
-			
-			if (!isNaN(value.tintAmount)) {
-				var ratio:Number = value.tintAmount / (1 - ((end.redMultiplier + end.greenMultiplier + end.blueMultiplier) / 3));
-				end.redOffset *= ratio;
-				end.greenOffset *= ratio;
-				end.blueOffset *= ratio;
-				end.redMultiplier = end.greenMultiplier = end.blueMultiplier = 1 - value.tintAmount;
-			} else if (!isNaN(value.exposure)) {
-				end.redOffset = end.greenOffset = end.blueOffset = 255 * (value.exposure - 1);
-				end.redMultiplier = end.greenMultiplier = end.blueMultiplier = 1;
-			} else if (!isNaN(value.brightness)) {
-				end.redOffset = end.greenOffset = end.blueOffset = Math.max(0, (value.brightness - 1) * 255);
-				end.redMultiplier = end.greenMultiplier = end.blueMultiplier = 1 - Math.abs(value.brightness - 1);
-			}
-			
-			_ignoreAlpha = Boolean(tween.vars.alpha != undefined && value.alphaMultiplier == undefined);
-			
-			init(target as DisplayObject, end);
-			
-			return true;
-		}
-		
-	}
-}
+﻿/** * ColorTransformPlugin Class by Giraldo Rosales. * Visit www.liquidgear.net for documentation and updates. * * Based on ColorTransformPlugin by Grant Skinner. *  * Copyright (c) 2011 Nitrogen Labs, Inc. All rights reserved. *  * Permission is hereby granted, free of charge, to any person * obtaining a copy of this software and associated documentation * files (the "Software"), to deal in the Software without * restriction, including without limitation the rights to use, * copy, modify, merge, publish, distribute, sublicense, and/or sell * copies of the Software, and to permit persons to whom the * Software is furnished to do so, subject to the following * conditions: *  * The above copyright notice and this permission notice shall be * included in all copies or substantial portions of the Software. *  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR * OTHER DEALINGS IN THE SOFTWARE. **/package lg.flash.motion.plugins {	import flash.geom.ColorTransform;		import lg.flash.motion.Tween;		/**	* Plugin for Tween. Applies a color transform or tint to the target based on the	* "redMultiplier", "greenMultiplier", "blueMultiplier", "alphaMultiplier", "redOffset",	* "greenOffset", "blueOffset", "alphaOffset", and/or "tint" tween values. The tint	* value is a 32 bit color, where the alpha channel represents the strength of the tint.	* For example 0x8000FF00 would apply a green tint at 50% (0x80) strength.	* <br/><br/>	* Supports the following <code>pluginData</code> properties:<UL>	* <LI> ColorTransformEnabled: overrides the enabled property for the plugin on a per tween basis.	* </UL>	**/	public class ColorTransformPlugin {		/** Specifies whether this plugin is enabled for all tweens by default. **/		public static var enabled:Boolean=true;				/** @private **/		protected static var installed:Boolean = false;		/** @private **/		protected static var tweenProperties:Array = ["redMultiplier","greenMultiplier","blueMultiplier","alphaMultiplier","redOffset","greenOffset","blueOffset","alphaOffset","tint"];				/**		* Installs this plugin for use with all Tween instances.		**/		public static function install():void {			if (installed) { return; }			installed = true;			Tween.installPlugin(ColorTransformPlugin,tweenProperties,true);		}				/** @private **/		public static function init(tween:Tween, name:String, value:Number):Number {			if (!((enabled && tween.pluginData.ColorTransformEnabled == null) || tween.pluginData.ColorTransformEnabled)) { return value; }						if (name == "tint") {				// try to calculate initial tint:				var ct:ColorTransform = tween.target.transform.colorTransform;				var a:uint = Math.min(1,1-ct.redMultiplier);				var r:uint = Math.min(0xFF,ct.redOffset*a);				var g:uint = Math.min(0xFF,ct.greenOffset*a);				var b:uint = Math.min(0xFF,ct.blueOffset*a);				var tint:uint = a*0xFF<<24 | r<<16 | g<<8 | b;				return tint;			} else {				return tween.target.transform.colorTransform[name];			}		}				/** @private **/		public static function tween(tween:Tween, name:String, value:Number, initValue:Number, rangeValue:Number, ratio:Number, end:Boolean):Number {			if (!((tween.pluginData.ColorTransformEnabled == null && enabled) || tween.pluginData.ColorTransformEnabled)) { return value; }						var ct:ColorTransform = tween.target.transform.colorTransform;			if (name == "tint") {				var aA:uint = initValue>>24&0xFF;				var rA:uint = initValue>>16&0xFF;				var gA:uint = initValue>>8&0xFF;				var bA:uint = initValue&0xFF;				var tint:uint = initValue+rangeValue>>0;				var a:uint = aA+ratio*((tint>>24&0xFF)-aA);				var r:uint = rA+ratio*((tint>>16&0xFF)-rA);				var g:uint = gA+ratio*((tint>>8&0xFF)-gA);				var b:uint = bA+ratio*((tint&0xFF)-bA);				var mult:Number = 1-a/0xFF;				tween.target.transform.colorTransform = new ColorTransform(mult,mult,mult,ct.alphaMultiplier,r,g,b,ct.alphaOffset);			} else {				ct[name] = value;				tween.target.transform.colorTransform = ct;			}						// tell Tween not to use the default assignment behaviour:			return NaN;		}	}}
