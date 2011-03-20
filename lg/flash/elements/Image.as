@@ -136,9 +136,7 @@ package lg.flash.elements {
 			return data.image;
 		}
 		public function set image(bitmap:Bitmap):void {
-			if(!bitmap) {
-				return;
-			}
+			if(!bitmap) return;
 			
 			clean();
 			
@@ -147,20 +145,16 @@ package lg.flash.elements {
 			addChild(bitmap);
 			
 			//Set size to content if not already set
-			if(position == 'stretch') {
-				setSize(data.stage.stageWidth, data.stage.stageHeight);
+			if(!isNaN(data.width)) {
+				width		= data.width;
 			} else {
-				if(!isNaN(data.width)) {
-					width		= data.width;
-				} else {
-					data.width	= bitmap.width;
-				}
-				
-				if(!isNaN(data.height)) {
-					height		= data.height;
-				} else {
-					data.height	= bitmap.height;
-				}
+				data.width	= bitmap.width;
+			}
+			
+			if(!isNaN(data.height)) {
+				height		= data.height;
+			} else {
+				data.height	= bitmap.height;
 			}
 			/*
 			if(!isNaN(data.scaleX)) {
@@ -177,25 +171,23 @@ package lg.flash.elements {
 		public override function set width(value:Number):void {
 			data.width	= value;
 			
-			if(image) {
-				image.width	= value;
-				trigger(ElementEvent.RESIZE);
+			if(data.image) {
+				data.image.width	= value;
 			}
 		}
 		
 		public override function set height(value:Number):void {
 			data.height	= value;
 			
-			if(image) {
-				image.height	= value;
-				trigger(ElementEvent.RESIZE);
+			if(data.image) {
+				data.image.height	= value;
 			}
 		}
 		
 		public override function set scaleX(value:Number):void {
 			data._scaleX	= value;
 			
-			if(image) {
+			if(data.image) {
 				data.image.scaleX	= value;
 			}
 		}
@@ -203,7 +195,7 @@ package lg.flash.elements {
 		public override function set scaleY(value:Number):void {
 			data._scaleY	= value;
 			
-			if(image) {
+			if(data.image) {
 				data.image.scaleY	= value;
 			}
 		}
@@ -285,7 +277,7 @@ package lg.flash.elements {
 			if(image) {
 				if(contains(image)) {
 					removeChild(image);
-					image	= null;
+					data.image	= null;
 				}
 			}
 		}

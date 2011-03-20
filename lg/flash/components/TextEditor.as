@@ -3,31 +3,17 @@ package lg.flash.components {
 	
 	import flash.display.MovieClip;
 	import flash.events.*;
+	import flash.geom.ColorTransform;
 	import flash.text.*;
-	
-	import flashx.textLayout.edit.SelectionManager;
-	import flashx.textLayout.elements.TextFlow;
 	
 	import lg.flash.elements.Text;
 	import lg.flash.elements.VisualElement;
 	import lg.flash.events.ElementEvent;
 	
 	public class TextEditor extends VisualElement {
-		/*
-		private var underline	= cbOption_Underline.selected;
-		public var bold		= cbOption_Bold.selected;
-		_format.italic		= cbOption_Italic.selected;
-		_format.size		= cxOption_Size.selectedItem.data;
-		_format.font		= cxOption_Font.selectedItem.data;
-		_format.color
-		*/
-		private var _fontSizeStart:int	= 8;
-		private var _fontSizeEnd:int	= 20;
-		
-		private var _format:TextFormat;
-		private var _list:Array		= [];
-		private var _line:Array		= [];
-		private var xColorPickerOpen:Boolean;
+		private var _format:TextFormat	= new TextFormat();
+		private var _line:Array			= [];
+		private var _list:Array			= [];
 		
 		private var tf:TextField;
 		
@@ -36,52 +22,24 @@ package lg.flash.components {
 			super.setAttributes(obj);
 			
 			//Text field
-			tf			= new TextField();
-			tf.width	= data.width;
-			tf.height	= data.height;
-			addChild(tf);
-			
-			var i : int;
-			var list:Array;
-			/*
-			addEventListener(Event.CHANGE, xfOnEvent, false, 0, true);
-			addEventListener(MouseEvent.MOUSE_DOWN, xfOnEvent, false, 0, true);
-			addEventListener(MouseEvent.CLICK, xfOnEvent, false, 0, true);
-			*/
-			
-			if (stage != null) {
-				stage.addEventListener(MouseEvent.MOUSE_UP, xfOnEvent, false, 0, true);
-			}
-			
-			addEventListener(MouseEvent.MOUSE_MOVE, xfOnEvent, false, 0, true);
-			addEventListener(KeyboardEvent.KEY_UP, xfOnEvent, false, 0, true);
-			//cxOption_Size.addEventListener(Event.CHANGE, xfOnEvent, false, 0, true);
-			//cxOption_Font.addEventListener(Event.CHANGE, xfOnEvent, false, 0, true);
-			
-			list = Font.enumerateFonts(true);
-			list.sort();
-			
-			/*
-			for (i = 0; i < list.length; i++) { 
-				cxOption_Font.addItem( { label: list[i].fontName, data: list[i].fontName } );
-			}
-			
-			for (i = _fontSizeStart; i < _fontSizeEnd + 1; i++) {
-				cxOption_Size.addItem( { label: i, data: i } );
-			}
-			*/
-			
+			tf						= new TextField();
+			tf.type					= 'input';
+			tf.width				= data.width;
+			tf.height				= data.height;
 			tf.embedFonts			= false;
 			tf.useRichTextClipboard	= true;
+			tf.background			= true;
 			
-			if (stage != null) {
-				stage.focus = tf;
-			}
+			//Format
+			_format.size			= 12;
+			tf.setTextFormat(_format);
+			addChild(tf);
 			
-			if(tf.text != '') {
-				tf.setSelection(tf.length, tf.length);
-				setUI(tf.getTextFormat(tf.length - 1, tf.length));
-			}
+			addEventListener(Event.ADDED_TO_STAGE, onAdded);
+		}
+		
+		private function onAdded(e:Event):void {
+			stage.focus = tf;
 		}
 		
 		public function get text():String {
@@ -90,25 +48,22 @@ package lg.flash.components {
 		public function set text(value:String):void {
 			tf.text	= value;
 		}
-		/*
-		public function setBold():void {
-			var textflow:TextFlow		= super.textFlow;
-			var sel:SelectionManager	= textFlow.interactionManager as SelectionManager;
-			
-			if(!sel.hasSelection()) {
-				return;
-			}
-			
-			var str:String		= super.htmlText;
-			var begin:String	= str.slice(0, sel.absoluteStart);
-			var edit:String		= str.slice(sel.absoluteStart, sel.absoluteEnd);
-			var end:String		= str.slice(sel.absoluteEnd, str.length);
-			var update:String	= begin+'<b>'+edit+'</b>'+end;
-			
-			super.htmlText		= update;
-			trace(sel.absoluteStart, sel.absoluteEnd, super.htmlText);
+		
+		public override function set width(value:Number):void {
+			if(tf) tf.width	= value;
 		}
-		*/
+		public override function set height(value:Number):void {
+			if(tf) tf.height	= value;
+		}
+		
+		public function switchBlack():void {
+			tf.textColor		= 0xffffff;
+			tf.backgroundColor	= 0x000000;
+		}
+		public function switchWhite():void {
+			tf.textColor		= 0x000000;
+			tf.backgroundColor	= 0xffffff;
+		}
 		
 		private function getParaLine(idx:int):String {
 			var n : int;
@@ -143,7 +98,7 @@ package lg.flash.components {
 		private function setUI(txtFormat:TextFormat):void {
 			var g:int, idx:int;
 			var list:Array;
-			var s:String;	
+			var s:String;
 			
 			if (txtFormat.font != null) {
 				s = txtFormat.font == "_sans" ? "Arial" : txtFormat.font;
@@ -171,21 +126,9 @@ package lg.flash.components {
 				}
 			}
 			
-			this['rbAlign_' + getLineAlign(tf.htmlText, g)].selected = true;
+			//this['rbAlign_' + getLineAlign(tf.htmlText, g)].selected = true;
 		}
-		
-		private function comboItemToIndex(combo:*, item:Object):int {
-			var g:int;
-			
-			for(g=0; g<combo.length; g++) {
-				if(combo.getItemAt(g).data.toString() == item.toString()) {
-					return g;
-				}
-			}
-			
-			return -1;
-		}
-		
+		/*
 		private function getLineAlign(vHtml:String, lineNum:int):String {
 			var prefix:String, s:String, t:String;
 			
@@ -208,7 +151,8 @@ package lg.flash.components {
 			
 			return s;
 		}
-		
+		*/
+		/*
 		private function setLineAlign(vParaN:int, alignment:String):void {
 			var g:int;
 			var list:Array;
@@ -234,7 +178,8 @@ package lg.flash.components {
 			
 			tf.htmlText	= edit;
 		}
-		
+		*/
+		/*
 		private function getLinePrefix(lineNum:int):int {
 			var g:int, num:int;
 			
@@ -244,68 +189,8 @@ package lg.flash.components {
 			
 			return num;
 		}
-		
-		protected function xfOnEvent(e:*):void {
-			var i:int, j:int, n:int;
-			var vTarget:*;
-			var list:Array;
-			
-			vTarget = e.target;
-			
-			switch (e.type) {
-				case MouseEvent.MOUSE_MOVE:
-					e.updateAfterEvent();	// for extra smoothing
-					break;
-				case KeyboardEvent.KEY_UP:
-				case MouseEvent.MOUSE_UP:
-					_list[0] = tf.selectionBeginIndex;
-					_list[1] = tf.selectionEndIndex;
-					_line[0] = tf.getLineIndexOfChar(_list[0] == tf.length ? _list[0] - 1 : _list[0]);
-					_line[1] = tf.getLineIndexOfChar(_list[1] == tf.length ? _list[1] - 1 : _list[1]);
-					_line.sort(Array.NUMERIC);
-					_list.sort(Array.NUMERIC);
-					
-					if (_list[0] == _list[1]) {			
-						_list[0] -= 1;				
-						if (_list[0] == -1) {
-							_list[0] = 0;
-							return;
-						}
-						
-						_format = tf.getTextFormat(_list[0], _list[1]);		
-						_list[0] += 1;
-					} else {
-						_format = tf.getTextFormat(_list[0], _list[0] + 1);
-					}
-					/*
-					if (vTarget.parent is ColorPicker) {
-						xColorPickerOpen = true;
-					}
-					
-					if (!xColorPickerOpen) {
-						setUI(_format);
-					}
-					*/
-					break;
-				
-				case MouseEvent.CLICK:
-					/*
-					if (vTarget.name.substring(0, 8) == "rbAlign_") {		
-						for(g=_line[0]; g<_line[1] + 1; g++) {
-							setLineAlign(getParaIndexFromCaret(getLinePrefix(g)), vTarget.name.substring(vTarget.name.lastIndexOf('_') + 1, vTarget.name.length));
-						}
-						
-						stage.focus = tf;
-						tf.setSelection(_list[0], _list[1]);
-					}
-					*/
-					break;		
-			}
-			
-			trace(tf.htmlText);
-		}
-		
-		public function onUpdateText(e:TextEvent):void {
+		*/
+		//public function onUpdateText(e:TextEvent):void {
 			/*
 			_format				= new TextFormat();
 			_format.underline	= cbOption_Underline.selected;
@@ -315,49 +200,48 @@ package lg.flash.components {
 			_format.font		= cxOption_Font.selectedItem.data;
 			_format.color		= cpOption_Color.selectedColor;
 			*/
-			if (tf.caretIndex - 1 != -1) {
-				tf.setTextFormat(_format, tf.caretIndex - 1, tf.caretIndex);
-			}
-		}
+		//	if (tf.caretIndex - 1 != -1) {
+		//		tf.setTextFormat(_format, tf.caretIndex - 1, tf.caretIndex);
+		//	}
+		//}
 		
-		public function onOptionChange(e:ElementEvent):void {
+		public function updateFormat(e:ElementEvent=null):void {
 			var btn:VisualElement	= e.target as VisualElement;
 			
-			if (btn.id.substring(2, btn.id.lastIndexOf('_')) == 'Option') {
-				stage.focus = tf;
-				tf.setSelection(_list[0], _list[1]);
-				
-				if (_list[0] == _list[1]) {
-					return;
-				}
-				
-				_format = new TextFormat();
-				_format = tf.getTextFormat(_list[0], _list[1]);
-				
-				switch (btn.id.substring(btn.id.lastIndexOf('_') + 1, btn.id.length).toLowerCase()) {
-					case 'underline':
-						_format.underline	= '';//btn.selected;
-						break;
-					case "bold":
-						_format.bold		= '';//btn.selected;
-						break;
-					case "italic":
-						_format.italic		= '';//btn.selected;
-						break;
-					case "size":
-						_format.size		= '';//btn.selectedItem.data;
-						break;
-					case "font":
-						_format.font		= '';//btn.selectedItem.data;
-						break;
-					case "color":
-						_format.color		= '';//btn.selectedColor;
-						break;
-				}
-				
-				tf.setTextFormat(_format, _list[0], _list[1]);
-				xColorPickerOpen = false;			
+			_list[0] = tf.selectionBeginIndex;
+			_list[1] = tf.selectionEndIndex;
+			
+			tf.setSelection(_list[0], _list[1]);
+			
+			if (_list[0] == _list[1]) {
+				return;
 			}
+			
+			_format = tf.getTextFormat(_list[0], _list[1]);
+			
+			switch (btn.id.substring(btn.id.lastIndexOf('_') + 1, btn.id.length).toLowerCase()) {
+				case 'underline':
+					_format.underline	= !_format.underline;
+					break;
+				case "bold":
+					_format.bold		= !_format.bold;
+					break;
+				case "italic":
+					_format.italic		= !_format.italic;
+					break;
+				case "size":
+					_format.size		= btn.data.value;
+					break;
+				case "font":
+					_format.font		= btn.data.value;
+					break;
+				case "color":
+					_format.color		= btn.data.value;
+					break;
+			}
+			
+			tf.setTextFormat(_format, _list[0], _list[1]);
+			stage.focus = tf;
 		}
 	}
 }

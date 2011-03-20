@@ -120,7 +120,7 @@
 			//Dispatch event
 			var event:ModelEvent	= new ModelEvent(ModelEvent.LOADED);
 			event.data.id			= ldrId;
-			event.data.data		= _data[ldrId];
+			event.data.data			= _data[ldrId];
 			dispatchEvent(event);
 			
 			//Cleanup
